@@ -70,7 +70,7 @@ if (!process.env.token) {
 }
 
 var redis = require('redis');
-var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
+//var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
 var Botkit = require('./lib/Botkit.js');
 var os = require('os');
 var gamingnews = [];
@@ -230,7 +230,7 @@ controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your na
              '>. I have been running for ' + uptime + ' on ' + hostname + '.');
 
     });
-	
+	/*
 controller.hears(['!addgaming (.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
     
 	var news = message.match[1];
@@ -305,7 +305,7 @@ controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention', func
 	  
 	  bot.reply(message, 'The gaming news database has been cleaned!');
 	
-});
+}); */
 
 function formatUptime(uptime) {
     var unit = 'second';
