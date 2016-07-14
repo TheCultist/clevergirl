@@ -260,7 +260,10 @@ controller.hears(['!claimgaming (.*)'], 'direct_message,direct_mention,mention',
 			);
 			client.lset('gaming', i, 'claimed');
 		}
+	  
+	  
 	}
+	
 });
 
 controller.hears(['!viewgaming'], 'direct_message,direct_mention,mention', function(bot, message) {
@@ -271,15 +274,16 @@ controller.hears(['!viewgaming'], 'direct_message,direct_mention,mention', funct
 	
 	for (var i = 0, len = newsList.length; i < len; i++) {
 	  if(newsList[i] != 'claimed'){
-		bot.say(
-			{
-				text: newsList[i],
-				channel: message.user
-			}
-		);
-		
+			bot.say(
+				{
+					text: newsList[i],
+					channel: message.user
+				}
+			);
+			
+		}
+	  }
 	}
-  }
 });
 
 controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention', function(bot, message) {
@@ -300,6 +304,7 @@ controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention', func
 	  client.del('gaming');
 	  
 	  bot.reply(message, 'The gaming news database has been cleaned!');
+	}
 });
 
 function formatUptime(uptime) {
