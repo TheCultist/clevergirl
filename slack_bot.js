@@ -69,8 +69,12 @@ if (!process.env.token) {
     process.exit(1);
 }
 
+var redis = require('redis');
+var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
 var Botkit = require('./lib/Botkit.js');
 var os = require('os');
+var gamingnews = [];
+var technews = [];
 
 var controller = Botkit.slackbot({
     debug: true
@@ -226,6 +230,79 @@ controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your na
              '>. I have been running for ' + uptime + ' on ' + hostname + '.');
 
     });
+	
+controller.hears(['!addgaming (.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
+    
+	var news = message.match[1];
+
+	client.lpush('gaming', news);
+	
+	bot.reply(message, 'Your scoop has been added :scoop:');
+	
+});
+
+controller.hears(['!claimgaming (.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
+    
+	var news = message.match[1];
+
+	var newsList = client.lrange('gaming', 0, -1);
+	
+	for (var i = 0, len = newsList.length; i < len; i++) {
+	  
+	  if (newsList[i].substring(0, news.length) == news) {
+		  
+			bot.reply(message, 'The scoop :scoop: ' + news + ' has been claimed by ' + message.user);
+			bot.say(
+				{
+					text: 'Here is the news story you claimed: \n' + news,
+					channel: message.user
+				}
+			);
+			client.lset('gaming', i, 'claimed');
+		}
+	  
+	  
+	}
+	
+});
+
+controller.hears(['!viewgaming'], 'direct_message,direct_mention,mention', function(bot, message) {
+    
+	var newsList = client.lrange('gaming', 0, -1);
+	
+	bot.reply(message, 'Unclaimed stories incoming in your inbox!');
+	
+	for (var i = 0, len = newsList.length; i < len; i++) {
+	  if(newsList[i] != 'claimed'){
+			bot.say(
+				{
+					text: newsList[i],
+					channel: message.user
+				}
+			);
+			
+		}
+	  }
+	}
+});
+
+controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention', function(bot, message) {
+    
+	var newsList = client.lrange('gaming', 0, -1);
+		
+	for (var i = 0, len = newsList.length; i < len; i++) {
+	  if(newsList[i] != 'claimed'){
+			bot.say(
+				{
+					text: newsList[i],
+					channel: message.user
+				}
+			);
+		}
+	  }
+	  bot.reply(message, 'The gaming news database has been cleaned!');
+	}
+});
 
 function formatUptime(uptime) {
     var unit = 'second';
