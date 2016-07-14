@@ -64,13 +64,13 @@ This bot demonstrates many of the core features of Botkit:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-if (!process.env.token) {
+if (!'xoxb-59331636245-r6d6ZfGbSOwTlZ2KLwA4Y1K8') {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
 
-//var redis = require('redis');
-//var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
+var redis = require('redis');
+var client = redis.createClient('redis://rediscloud:TIocyfg2tcCUEfKR@pub-redis-10372.us-east-1-2.4.ec2.garantiadata.com:10372', {no_ready_check: true});
 var Botkit = require('./lib/Botkit.js');
 var os = require('os');
 var gamingnews = [];
@@ -81,7 +81,7 @@ var controller = Botkit.slackbot({
 });
 
 var bot = controller.spawn({
-    token: process.env.token
+    token: 'xoxb-59331636245-r6d6ZfGbSOwTlZ2KLwA4Y1K8'
 }).startRTM();
 
 
@@ -230,82 +230,114 @@ controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your na
              '>. I have been running for ' + uptime + ' on ' + hostname + '.');
 
     });
-	/*
-controller.hears(['!addgaming (.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
+	
+controller.hears(['!addgaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     
 	var news = message.match[1];
-
-	client.lpush('gaming', news);
 	
-	bot.reply(message, 'Your scoop has been added :scoop:');
-	
-});
+	if(news != undefined && news !=null && news != ''){
 
-controller.hears(['!claimgaming (.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
-    
-	var news = message.match[1];
-
-	var newsList = client.lrange('gaming', 0, -1);
-	
-	for (var i = 0, len = newsList.length; i < len; i++) {
-	  
-	  if (newsList[i].substring(0, news.length) == news) {
-		  
-			bot.reply(message, 'The scoop :scoop: ' + news + ' has been claimed by ' + message.user);
-			bot.say(
-				{
-					text: 'Here is the news story you claimed: \n' + news,
-					channel: message.user
-				}
-			);
-			client.lset('gaming', i, 'claimed');
-		}
-	  
-	  
+		client.rpush(['gaming', news]);
+		
+		bot.reply(message, 'Your scoop has been added :scoop:');
 	}
 	
 });
 
-controller.hears(['!viewgaming'], 'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['!claimgaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     
-	var newsList = client.lrange('gaming', 0, -1);
+	var news = message.match[1];
 	
-	bot.reply(message, 'Unclaimed stories incoming in your inbox!');
-	
-	for (var i = 0, len = newsList.length; i < len; i++) {
-	  if(newsList[i] != 'claimed'){
-			bot.say(
-				{
-					text: newsList[i],
-					channel: message.user
+	if(typeof news !== 'undefined' && news !=null && news != ''){
+		client.lrange('gaming', 0, -1, function(err, reply) {
+			bot.startPrivateConversation(message,function(err,convo) {
+
+				for (var i = 0; i < reply.length; i++) {
+			  
+					if (reply[i].substring(0, news.length) == news) {
+
+						bot.reply(message, 'The scoop :scoop: ' + reply[i] + ' has been claimed');
+						convo.say(
+							{
+								text: 'Here is the news story you claimed: \n' + reply[i],
+								channel: message.user
+							}
+						);
+						client.lset('gaming', i, 'claimed');
+					}
 				}
-			);
-			
-		}
-	  }
-	
+			});		
+		});
+	}
+
 });
 
-controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention', function(bot, message) {
-    
-	var newsList = client.lrange('gaming', 0, -1);
+controller.hears(['!viewgaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    	
+	client.lrange('gaming', 0, -1, function(err, reply) {
 		
-	for (var i = 0, len = newsList.length; i < len; i++) {
-	  if(newsList[i] != 'claimed'){
-			bot.say(
-				{
-					text: newsList[i],
-					channel: message.user
+		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+			
+			bot.reply(message, 'Unclaimed stories incoming in your inbox!');
+
+			bot.startPrivateConversation(message,function(err,convo) {
+
+				for (var i = 0; i < reply.length; i++) {
+				
+				  if(reply[i] != 'claimed'){
+						convo.say(
+							{
+								text: reply[i],
+								channel: message.user
+							}
+						);
+					}
 				}
-			);
+			});		
+		}else{
+			bot.reply(message, 'There are no news in the backlog');
 		}
-	  }
-	  
+		
+	});
+
+});
+
+controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    	
+	client.lrange('gaming', 0, -1, function(err, reply) {
+			
+		bot.startPrivateConversation(message,function(err,convo) {
+			
+		for (var i = 0; i < reply.length; i++) {
+		  if(reply[i] != 'claimed'){
+				convo.say(
+					{
+						text: reply[i],
+						channel: message.user
+					}
+				);
+				
+			}
+		  }
+		});
+	 });
+
 	  client.del('gaming');
 	  
 	  bot.reply(message, 'The gaming news database has been cleaned!');
 	
-}); */
+});
+
+function allclaimed(list) {
+
+    for(var i = 0; i < list.length; i++)
+    {
+        if(list[i] !== 'claimed')
+            return false;
+    }
+
+    return true;
+}
 
 function formatUptime(uptime) {
     var unit = 'second';
