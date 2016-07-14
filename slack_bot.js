@@ -283,7 +283,7 @@ controller.hears(['!viewgaming'], 'direct_message,direct_mention,mention', funct
 			
 		}
 	  }
-	}
+	
 });
 
 controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention', function(bot, message) {
@@ -304,7 +304,7 @@ controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention', func
 	  client.del('gaming');
 	  
 	  bot.reply(message, 'The gaming news database has been cleaned!');
-	}
+	
 });
 
 function formatUptime(uptime) {
