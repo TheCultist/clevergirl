@@ -300,9 +300,12 @@ controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention', func
 			);
 		}
 	  }
+<<<<<<< HEAD
 	  
 	  client.del('gaming');
 	  
+=======
+>>>>>>> 4d8c29c7947c91a2528ef52179ff6b8e1f393b9f
 	  bot.reply(message, 'The gaming news database has been cleaned!');
 	}
 });
