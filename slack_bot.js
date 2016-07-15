@@ -459,7 +459,7 @@ controller.hears(['^!view','^!claim (.*)','^!clear','!add (.*)'], 'direct_messag
 	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
 	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
 	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
-	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n'
+	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n';
 
 	bot.startPrivateConversation(message,function(err,convo) {
 
