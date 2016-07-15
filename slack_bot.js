@@ -295,7 +295,7 @@ controller.hears(['^!viewgaming'], 'direct_message,direct_mention,mention,ambien
 				}
 			});		
 		}else{
-			bot.reply(message, 'There are no news in the backlog');
+			bot.reply(message, 'There are no stories left in the backlog');
 		}
 		
 	});
@@ -393,7 +393,7 @@ controller.hears(['^!viewtech'], 'direct_message,direct_mention,mention,ambient'
 				}
 			});		
 		}else{
-			bot.reply(message, 'There are no news in the backlog');
+			bot.reply(message, 'There are no stories left in the backlog');
 		}
 		
 	});
