@@ -191,32 +191,32 @@ controller.hears(['what is my name', 'who am i'], 'direct_message,direct_mention
 });
 
 
-controller.hears(['shutdown'], 'direct_message,direct_mention,mention', function(bot, message) {
-
-    bot.startConversation(message, function(err, convo) {
-
-        convo.ask('Are you sure you want me to shutdown?', [
-            {
-                pattern: bot.utterances.yes,
-                callback: function(response, convo) {
-                    convo.say('Bye!');
-                    convo.next();
-                    setTimeout(function() {
-                        process.exit();
-                    }, 3000);
-                }
-            },
-        {
-            pattern: bot.utterances.no,
-            default: true,
-            callback: function(response, convo) {
-                convo.say('*Phew!*');
-                convo.next();
-            }
-        }
-        ]);
-    });
-});
+//controller.hears(['shutdown'], 'direct_message,direct_mention,mention', function(bot, message) {
+//
+//    bot.startConversation(message, function(err, convo) {
+//
+//        convo.ask('Are you sure you want me to shutdown?', [
+//            {
+//                pattern: bot.utterances.yes,
+//                callback: function(response, convo) {
+//                    convo.say('Bye!');
+//                    convo.next();
+//                    setTimeout(function() {
+//                        process.exit();
+//                    }, 3000);
+//                }
+//            },
+//        {
+//            pattern: bot.utterances.no,
+//            default: true,
+//            callback: function(response, convo) {
+//                convo.say('*Phew!*');
+//                convo.next();
+//            }
+//        }
+//        ]);
+//    });
+//});
 
 
 controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your name'],
@@ -230,8 +230,8 @@ controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your na
              '>. I have been running for ' + uptime + ' on ' + hostname + '.');
 
     });
-	
-controller.hears(['!addgaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+
+controller.hears(['^!addgaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     
 	var news = message.match[1];
 	
@@ -244,7 +244,7 @@ controller.hears(['!addgaming (.*)'], 'direct_message,direct_mention,mention,amb
 	
 });
 
-controller.hears(['!claimgaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+controller.hears(['^!claimgaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     
 	var news = message.match[1];
 	
@@ -272,7 +272,7 @@ controller.hears(['!claimgaming (.*)'], 'direct_message,direct_mention,mention,a
 
 });
 
-controller.hears(['!viewgaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+controller.hears(['^!viewgaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     	
 	client.lrange('gaming', 0, -1, function(err, reply) {
 		
@@ -302,7 +302,7 @@ controller.hears(['!viewgaming'], 'direct_message,direct_mention,mention,ambient
 
 });
 
-controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+controller.hears(['^!cleargaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     	
 	client.lrange('gaming', 0, -1, function(err, reply) {
 			
@@ -325,6 +325,123 @@ controller.hears(['!cleargaming'], 'direct_message,direct_mention,mention,ambien
 	  client.del('gaming');
 	  
 	  bot.reply(message, 'The gaming news database has been cleaned!');
+	
+});
+
+
+controller.hears(['^!addtech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	var news = message.match[1];
+	
+	if(news != undefined && news !=null && news != ''){
+
+		client.rpush(['tech', news]);
+		
+		bot.reply(message, 'Your scoop has been added :scoop:');
+	}
+	
+});
+
+controller.hears(['^!claimtech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	var news = message.match[1];
+	
+	if(typeof news !== 'undefined' && news !=null && news != ''){
+		client.lrange('tech', 0, -1, function(err, reply) {
+			bot.startPrivateConversation(message,function(err,convo) {
+
+				for (var i = 0; i < reply.length; i++) {
+			  
+					if (reply[i].substring(0, news.length) == news) {
+
+						bot.reply(message, 'The scoop :scoop: ' + reply[i] + ' has been claimed');
+						convo.say(
+							{
+								text: 'Here is the news story you claimed: \n' + reply[i],
+								channel: message.user
+							}
+						);
+						client.lset('tech', i, 'claimed');
+					}
+				}
+			});		
+		});
+	}
+
+});
+
+controller.hears(['^!viewtech'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    	
+	client.lrange('tech', 0, -1, function(err, reply) {
+		
+		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+			
+			bot.reply(message, 'Unclaimed stories incoming in your inbox!');
+
+			bot.startPrivateConversation(message,function(err,convo) {
+
+				for (var i = 0; i < reply.length; i++) {
+				
+				  if(reply[i] != 'claimed'){
+						convo.say(
+							{
+								text: reply[i],
+								channel: message.user
+							}
+						);
+					}
+				}
+			});		
+		}else{
+			bot.reply(message, 'There are no news in the backlog');
+		}
+		
+	});
+
+});
+
+controller.hears(['^!cleartech'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    	
+	client.lrange('tech', 0, -1, function(err, reply) {
+			
+		bot.startPrivateConversation(message,function(err,convo) {
+			
+		for (var i = 0; i < reply.length; i++) {
+		  if(reply[i] != 'claimed'){
+				convo.say(
+					{
+						text: reply[i],
+						channel: message.user
+					}
+				);
+				
+			}
+		  }
+		});
+	 });
+
+	  client.del('tech');
+	  
+	  bot.reply(message, 'The technology news database has been cleaned!');
+	
+});
+
+controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot, message) {
+	
+	bot.reply(message, 'You can give me these commands:\n' +
+	'@clevergirl hello/hi: hello to you :) \n'+
+	'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname \n'+
+	'@clevergirl what is my name/who am i: I will tell you your nickname \n'+
+	'@clevergirl uptime/identify yourself/who are you/what is your name: I will tell you your nickname \n'+
+	'!addgaming [text]: adds [text] to the unclaimed gaming news database. \n '+
+	'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database \n'+
+	'!viewgaming: sends to your slack inbox all the unclaimed gaming news. Does NOT remove them from the database \n'+
+	'!cleargaming: sends to your slack inbox all the unclaimed gaming news and removes them from the database \n'+
+	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
+	'!claimgaming [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
+	'!viewgaming: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
+	'!cleargaming: sends to your slack inbox all the unclaimed technology news and removes them from the database \n'
+	);
 	
 });
 
