@@ -433,6 +433,7 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 	'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname \n'+
 	'@clevergirl what is my name/who am i: I will tell you your nickname \n'+
 	'@clevergirl uptime/identify yourself/who are you/what is your name: I will tell you about me \n'+
+	'@clevergirl help: show list of commands \n'+
 	'!addgaming [text]: adds [text] to the unclaimed gaming news database. \n '+
 	'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database \n'+
 	'!viewgaming: sends to your slack inbox all the unclaimed gaming news. Does NOT remove them from the database \n'+
@@ -452,6 +453,7 @@ controller.hears(['^!view','^!claim (.*)','^!clear','!add (.*)'], 'direct_messag
 	'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname \n'+
 	'@clevergirl what is my name/who am i: I will tell you your nickname \n'+
 	'@clevergirl uptime/identify yourself/who are you/what is your name: I will tell you about me \n'+
+	'@clevergirl help: show list of commands \n'+
 	'!addgaming [text]: adds [text] to the unclaimed gaming news database. \n '+
 	'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database \n'+
 	'!viewgaming: sends to your slack inbox all the unclaimed gaming news. Does NOT remove them from the database \n'+
