@@ -438,12 +438,45 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 	'!viewgaming: sends to your slack inbox all the unclaimed gaming news. Does NOT remove them from the database \n'+
 	'!cleargaming: sends to your slack inbox all the unclaimed gaming news and removes them from the database \n'+
 	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
-	'!claimgaming [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
-	'!viewgaming: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
-	'!cleargaming: sends to your slack inbox all the unclaimed technology news and removes them from the database \n'
+	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
+	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
+	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n'
 	);
 	
 });
+
+controller.hears(['^!view','^!claim (.*)','^!clear','!add (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    	
+	var text = 'Hi. Newsbot has been retired and now I will do what he used to do for you. You can give me these commands:\n' +
+	'@clevergirl hello/hi: hello to you :) \n'+
+	'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname \n'+
+	'@clevergirl what is my name/who am i: I will tell you your nickname \n'+
+	'@clevergirl uptime/identify yourself/who are you/what is your name: I will tell you about me \n'+
+	'!addgaming [text]: adds [text] to the unclaimed gaming news database. \n '+
+	'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database \n'+
+	'!viewgaming: sends to your slack inbox all the unclaimed gaming news. Does NOT remove them from the database \n'+
+	'!cleargaming: sends to your slack inbox all the unclaimed gaming news and removes them from the database \n'+
+	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
+	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
+	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
+	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n'
+
+	bot.startPrivateConversation(message,function(err,convo) {
+
+		for (var i = 0; i < reply.length; i++) {
+		
+		  if(reply[i] != 'claimed'){
+				convo.say(
+					{
+						text: text,
+						channel: message.user
+					}
+				);
+			}
+		}
+	});		
+});
+
 
 function allclaimed(list) {
 
