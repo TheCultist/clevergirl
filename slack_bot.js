@@ -461,19 +461,13 @@ controller.hears(['^!view','^!claim (.*)','^!clear','!add (.*)'], 'direct_messag
 	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
 	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n';
 
-	bot.startPrivateConversation(message,function(err,convo) {
-
-		for (var i = 0; i < reply.length; i++) {
-		
-		  if(reply[i] != 'claimed'){
-				convo.say(
-					{
-						text: text,
-						channel: message.user
-					}
-				);
+	bot.startPrivateConversation(message,function(err,convo) {		
+		convo.say(
+			{
+				text: text,
+				channel: message.user
 			}
-		}
+		);
 	});		
 });
 
