@@ -446,13 +446,13 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 
 function removeLinkFormatting(text){
 	
-	var formattedLink = text.match(<*|*>);
+	var formattedLink = text.match(/<*|*>/g);
 	
 	var link = formattedLink.substr(0,formattedLink.indexOf('|'));
 	
 	link = link.replace('<','');
 	
-	var toReturn = text.replace(<*|*>,link)
+	var toReturn = text.replace(/<*|*>/g,link)
 	
 	return toReturn;
 	
