@@ -439,10 +439,25 @@ controller.hears(['^!setdigest (.*)'], 'direct_message,direct_mention,mention,am
 controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
 	client.get("digest", function(err, value) {
-        bot.reply(message, 'Current digest: ' + value);
+        bot.reply(message, 'Current digest: ' + removeLinkFormatting(value));
     });
 			
 });
+
+function removeLinkFormatting(text){
+	
+	var formattedLink = text.match(<*|*>);
+	
+	var link = formattedLink.substr(0,formattedLink.indexOf('|'));
+	
+	link = link.replace('<','');
+	
+	var toReturn = text.replace(<*|*>,link)
+	
+	return toReturn;
+	
+};
+
 
 controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot, message) {
 	
