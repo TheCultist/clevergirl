@@ -438,8 +438,10 @@ controller.hears(['^!setdigest (.*)'], 'direct_message,direct_mention,mention,am
 
 controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
-	bot.reply(message, 'Current digest: ' + client.get('digest'));
-		
+	client.get("test", function(err, value) {
+        bot.reply(message, 'Current digest: ' + value);
+    });
+			
 });
 
 controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot, message) {
