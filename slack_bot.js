@@ -439,28 +439,28 @@ controller.hears(['^!setdigest (.*)'], 'direct_message,direct_mention,mention,am
 controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
 	client.get("digest", function(err, value) {
-        bot.reply(message, 'Current digest: ' + removeLinkFormatting(value));
+        bot.reply(message, 'Current digest: ' + value);
     });
 			
 });
 
-function removeLinkFormatting(text){
-	
-	var toReturn = text;
-	
-	if(text.test(/\<(.*)\|(.*)\>/)){
-		var formattedLink = text.match(/\<(.*)\|(.*)\>/);
-		
-		var link = formattedLink.substring(0,formattedLink.indexOf('|'));
-		
-		link = link.replace('<','');
-		
-		toReturn = text.replace(/\<(.*)\|(.*)\>/,link)
-	}
-	
-	return toReturn;
-	
-};
+//function removeLinkFormatting(text){
+//	
+//	var toReturn = text;
+//	
+//	if(text.test(/\<(.*)\|(.*)\>/)){
+//		var formattedLink = text.match(/\<(.*)\|(.*)\>/);
+//		
+//		var link = formattedLink.substring(0,formattedLink.indexOf('|'));
+//		
+//		link = link.replace('<','');
+//		
+//		toReturn = text.replace(/\<(.*)\|(.*)\>/,link)
+//	}
+//	
+//	return toReturn;
+//	
+//};
 
 
 controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot, message) {
