@@ -448,14 +448,14 @@ function removeLinkFormatting(text){
 	
 	var toReturn = text;
 	
-	if(text.test(/<(.*)|(.*)>/)){
-		var formattedLink = text.match(/<(.*)|(.*)>/);
+	if(text.test(/\<(.*)\|(.*)\>/)){
+		var formattedLink = text.match(/\<(.*)\|(.*)\>/);
 		
 		var link = formattedLink.substring(0,formattedLink.indexOf('|'));
 		
 		link = link.replace('<','');
 		
-		toReturn = text.replace(/<(.*)|(.*)>/,link)
+		toReturn = text.replace(/\<(.*)\|(.*)\>/,link)
 	}
 	
 	return toReturn;
