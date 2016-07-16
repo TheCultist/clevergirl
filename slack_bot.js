@@ -426,6 +426,22 @@ controller.hears(['^!cleartech'], 'direct_message,direct_mention,mention,ambient
 	
 });
 
+controller.hears(['^!setdigest (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    	
+	var digest = message.match[1];
+
+	client.set('digest',digest);
+	
+	bot.reply(message, 'New digest set!');
+		
+});
+
+controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	
+	bot.reply(message, 'Current digest: ' + client.get('digest'));
+		
+});
+
 controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot, message) {
 	
 	bot.reply(message, 'You can give me these commands:\n' +
