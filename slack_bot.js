@@ -454,7 +454,7 @@ function removeLinkFormatting(toCheck){
 				
 		var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
 								
-		toReturn = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2].substring(1,formattedLink[2].length-1));
+		toReturn = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
 				
 		console.log(toReturn);
 
