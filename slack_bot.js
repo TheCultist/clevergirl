@@ -481,7 +481,7 @@ function removeLinkFormatting(toCheck){
 
 controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot, message) {
 	
-	bot.reply(message, 'You can give me these commands:\n' +
+	var text = 'You can give me these commands:\n' +
 	'@clevergirl hello/hi: hello to you :) \n'+
 	'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname \n'+
 	'@clevergirl what is my name/who am i: I will tell you your nickname \n'+
@@ -494,8 +494,16 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
 	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
 	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
-	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n'
-	);
+	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n';
+
+	bot.startPrivateConversation(message,function(err,convo) {		
+		convo.say(
+			{
+				text: text,
+				channel: message.user
+			}
+		);
+	});
 	
 });
 
