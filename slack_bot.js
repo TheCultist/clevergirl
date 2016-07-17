@@ -459,7 +459,7 @@ function removeLinkFormatting(toCheck){
 		console.log(toReturn);
 
 	}else if(/\<(.*)\>/.test(toCheck)){
-		toReturn = toCheck.substring(1,toCheck.length-1);
+		toReturn = toCheck.replace('<','').replace('>','');
 	}
 	
 	return toReturn;
