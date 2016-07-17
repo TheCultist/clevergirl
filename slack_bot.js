@@ -439,6 +439,7 @@ controller.hears(['^!setdigest (.*)'], 'direct_message,direct_mention,mention,am
 controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
 	client.get("digest", function(err, value) {
+		console.log(value);
         bot.reply(message, 'Current digest: ' + removeLinkFormatting(value));
     });
 			
