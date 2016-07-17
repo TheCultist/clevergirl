@@ -484,7 +484,7 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
 	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
 	'!setdigest: sets the new digest (replaces the old one) \n'+
-	'!digest: I''ll show you the current digest';
+	'!digest: I\'ll show you the current digest';
 
 	bot.startPrivateConversation(message,function(err,convo) {		
 		convo.say(
@@ -514,7 +514,7 @@ controller.hears(['^!view','^!claim (.*)','^!clear','^!add (.*)'], 'direct_messa
 	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
 	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
 	'!setdigest: sets the new digest (replaces the old one) \n'+
-	'!digest: I''ll show you the current digest';
+	'!digest: I\'ll show you the current digest';
 
 	bot.startPrivateConversation(message,function(err,convo) {		
 		convo.say(
