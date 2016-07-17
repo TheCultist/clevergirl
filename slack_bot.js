@@ -275,7 +275,8 @@ controller.hears(['^!claimgaming (.*)'], 'direct_message,direct_mention,mention,
 controller.hears(['^!viewgaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     	
 	client.lrange('gaming', 0, -1, function(err, reply) {
-		
+		console.log(reply);
+
 		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
 			
 			bot.reply(message, 'Unclaimed stories incoming in your inbox!');
