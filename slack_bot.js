@@ -449,20 +449,13 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 function removeLinkFormatting(toCheck){
 		
 	var toReturn = toCheck;
-	
-			var formattedLink = toCheck.match(/\<(.*)\>/);
 		
-		console.log(formattedLink);
-
-	
 	if(/\<(.*)\|(.*)\>/.test(toCheck)){
 				
 		var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
 								
 		toReturn = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
 				
-		console.log(toReturn);
-
 	}else if(/\<(.*)\>/.test(toCheck)){
 		
 		var formattedLink = toCheck.match(/\<(.*)\>/);
