@@ -442,7 +442,7 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 
 		var toPrint = removeLinkFormatting(value);
 	
-		bot.reply(message, 'Current digest: ' + toPrint);
+		setTimeout(bot.reply(message, 'Current digest: ' + toPrint),1000);
     });
 			
 });
