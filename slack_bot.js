@@ -450,7 +450,7 @@ function removeLinkFormatting(text){
 	
 	var pattern = new RegExp('/\<(.*)\|(.*)\>/');
 	
-	if(pattern.test(text){
+	if(pattern.test(text)){
 		var formattedLink = text.match(/\<(.*)\|(.*)\>/);
 		
 		var link = formattedLink.substring(0,formattedLink.indexOf('|'));
