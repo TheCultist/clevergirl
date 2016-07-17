@@ -285,6 +285,8 @@ controller.hears(['^!viewgaming'], 'direct_message,direct_mention,mention,ambien
 				for (var i = 0; i < reply.length; i++) {
 				
 				  if(reply[i] != 'claimed'){
+					  console.log(reply[i]);
+					  console.log(removeLinkFormatting(reply[i]));
 						convo.say(
 							{
 								text: removeLinkFormatting(reply[i]),
@@ -410,7 +412,7 @@ controller.hears(['^!cleartech'], 'direct_message,direct_mention,mention,ambient
 		  if(reply[i] != 'claimed'){
 				convo.say(
 					{
-						text: reply[i],
+						text: removeLinkFormatting(reply[i]),
 						channel: message.user
 					}
 				);
