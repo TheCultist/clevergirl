@@ -259,7 +259,7 @@ controller.hears(['^!claimgaming (.*)'], 'direct_message,direct_mention,mention,
 						bot.reply(message, 'The scoop :scoop: ' + reply[i] + ' has been claimed');
 						convo.say(
 							{
-								text: 'Here is the news story you claimed: \n' + reply[i],
+								text: 'Here is the news story you claimed: \n' + removeLinkFormatting(reply[i]),
 								channel: message.user
 							}
 						);
@@ -287,7 +287,7 @@ controller.hears(['^!viewgaming'], 'direct_message,direct_mention,mention,ambien
 				  if(reply[i] != 'claimed'){
 						convo.say(
 							{
-								text: reply[i],
+								text: removeLinkFormatting(reply[i]),
 								channel: message.user
 							}
 						);
@@ -312,7 +312,7 @@ controller.hears(['^!cleargaming'], 'direct_message,direct_mention,mention,ambie
 		  if(reply[i] != 'claimed'){
 				convo.say(
 					{
-						text: reply[i],
+						text: removeLinkFormatting(reply[i]),
 						channel: message.user
 					}
 				);
@@ -357,7 +357,7 @@ controller.hears(['^!claimtech (.*)'], 'direct_message,direct_mention,mention,am
 						bot.reply(message, 'The scoop :scoop: ' + reply[i] + ' has been claimed');
 						convo.say(
 							{
-								text: 'Here is the news story you claimed: \n' + reply[i],
+								text: 'Here is the news story you claimed: \n' + removeLinkFormatting(reply[i]),
 								channel: message.user
 							}
 						);
@@ -385,7 +385,7 @@ controller.hears(['^!viewtech'], 'direct_message,direct_mention,mention,ambient'
 				  if(reply[i] != 'claimed'){
 						convo.say(
 							{
-								text: reply[i],
+								text: removeLinkFormatting(reply[i]),
 								channel: message.user
 							}
 						);
@@ -447,29 +447,17 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 });
 
 function removeLinkFormatting(toCheck){
-	
-	debugger;
-	
+		
 	var toReturn = toCheck;
 	
-	console.log(toCheck);
-	console.log(/\<(.*)\|(.*)\>/.test(toCheck));
 	if(/\<(.*)\|(.*)\>/.test(toCheck)){
-		
-		console.log('FOUND A MATCH');
-		
-		debugger;
-
+				
 		var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
 		
 		console.log(formattedLink);
-		
-		//var unformattedLink = formattedLink.substring(0,formattedLink.indexOf('|'));
-				
+						
 		toReturn = formattedLink[2];
-		
-		//toReturn = toCheck.replace(/\<(.*)\|(.*)\>/,unformattedLink);
-		
+				
 		console.log(toReturn);
 
 	}
