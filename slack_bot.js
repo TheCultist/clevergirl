@@ -64,13 +64,13 @@ This bot demonstrates many of the core features of Botkit:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-if (!'xoxb-59331636245-r6d6ZfGbSOwTlZ2KLwA4Y1K8') {
+if (!process.env.token) {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
 
 var redis = require('redis');
-var client = redis.createClient('redis://rediscloud:TIocyfg2tcCUEfKR@pub-redis-10372.us-east-1-2.4.ec2.garantiadata.com:10372', {no_ready_check: true});
+var client = redis.createClient(process.env.REDIS_URL, {no_ready_check: true});
 var Botkit = require('./lib/Botkit.js');
 var os = require('os');
 var gamingnews = [];
@@ -81,7 +81,7 @@ var controller = Botkit.slackbot({
 });
 
 var bot = controller.spawn({
-    token: 'xoxb-59331636245-r6d6ZfGbSOwTlZ2KLwA4Y1K8'
+    token: process.env.token
 }).startRTM();
 
 
@@ -439,7 +439,6 @@ controller.hears(['^!setdigest (.*)'], 'direct_message,direct_mention,mention,am
 controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
 	client.get("digest", function(err, value) {
-
 		var toPrint = removeLinkFormatting(value);
 	
 		setTimeout(bot.reply(message, 'Current digest: ' + toPrint),1000);
@@ -447,27 +446,29 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 			
 });
 
-function removeLinkFormatting(text){
+function removeLinkFormatting(toCheck){
 	
-	var toReturn = text;
+	debugger;
 	
-	var pattern = new RegExp('/\<(.*)\|(.*)\>/');
-
-	console.log(text);
+	var toReturn = toCheck;
 	
-	console.log(pattern.test(text));
-	
-	if(pattern.test(text)){
+	console.log(toCheck);
+	console.log(/\<(.*)\|(.*)\>/.test(toCheck));
+	if(/\<(.*)\|(.*)\>/.test(toCheck)){
 		
 		console.log('FOUND A MATCH');
 		
-		var formattedLink = text.match(/\<(.*)\|(.*)\>/);
+		debugger;
+
+		var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
 		
-		var link = formattedLink.substring(0,formattedLink.indexOf('|'));
+		console.log(formattedLink);
+		
+		//var unformattedLink = formattedLink.substring(0,formattedLink.indexOf('|'));
 				
-		link = link.replace('<','');
+		toReturn = formattedLink[2];
 		
-		toReturn = text.replace(/\<(.*)\|(.*)\>/,link);
+		//toReturn = toCheck.replace(/\<(.*)\|(.*)\>/,unformattedLink);
 		
 		console.log(toReturn);
 
