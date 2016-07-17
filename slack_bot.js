@@ -494,7 +494,9 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
 	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
 	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
-	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n';
+	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
+	'!setdigest: sets the new digest (replaces the old one) \n'+
+	'!digest: I''ll show you the current digest';
 
 	bot.startPrivateConversation(message,function(err,convo) {		
 		convo.say(
@@ -509,7 +511,7 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 
 controller.hears(['^!view','^!claim (.*)','^!clear','^!add (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     	
-	var text = 'Hi. Newsbot has retired and now I will do what he used to do for you. \n You can give me these commands:\n' +
+	var text = 'You can give me these commands:\n' +
 	'@clevergirl hello/hi: hello to you :) \n'+
 	'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname \n'+
 	'@clevergirl what is my name/who am i: I will tell you your nickname \n'+
@@ -522,7 +524,9 @@ controller.hears(['^!view','^!claim (.*)','^!clear','^!add (.*)'], 'direct_messa
 	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
 	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
 	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
-	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n';
+	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
+	'!setdigest: sets the new digest (replaces the old one) \n'+
+	'!digest: I''ll show you the current digest';
 
 	bot.startPrivateConversation(message,function(err,convo) {		
 		convo.say(
