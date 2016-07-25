@@ -574,6 +574,45 @@ controller.hears(['^!mailmetech (.*)'], 'direct_message,direct_mention,mention,a
 	});
 });
 
+controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	
+	var toSend = '<ul>';
+	var mailaddress = message.match[1];
+	
+	client.lrange('gaming', 0, -1, function(err, reply) {
+		
+		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+			
+			bot.reply(message, 'Unclaimed stories incoming in your email!');
+
+			for (var i = 0; i < reply.length; i++) {
+			
+			  if(reply[i] != 'claimed'){
+				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+				}
+			}
+			tosend = toSend + '</ul>';
+			var mailOptions = {
+				from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
+				to: removeLinkFormatting(mailaddress), // list of receivers
+				subject: 'Gaming News', // Subject line
+				html: toSend // html body
+			};
+
+		// send mail with defined transport object
+		transporter.sendMail(mailOptions, function(error, info){
+			if(error){
+				return console.log(error);
+			}
+			console.log('Message sent: ' + info.response);
+		});
+
+		}else{
+			bot.reply(message, 'There are no stories left in the backlog');
+		}
+	});
+});
+
 function removeLinkFormatting(toCheck){
 		
 	var toReturn = toCheck;
