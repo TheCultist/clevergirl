@@ -71,21 +71,23 @@ if (!process.env.token) {
 
 var redis = require('redis');
 var nodemailer = require('nodemailer');
-var mg = require('nodemailer-mailgun-transport');
+//var mg = require('nodemailer-mailgun-transport');
 var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
 var Botkit = require('./lib/Botkit.js');
 var os = require('os');
 var gamingnews = [];
 var technews = [];
 
-var auth = {
-  auth: {
-    api_key: 'key-e83f3236aad7ce7a0d45d51d45de5ae6',
-    domain: 'sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org'
-  }
-}
+var transporter = nodemailer.createTransport('smtps://techraptorclevergirl%40yahoo.com:TechRaptorBot@smtp.mail.yahoo.com');
 
-var nodemailerMailgun = nodemailer.createTransport(mg(auth));
+//var auth = {
+//  auth: {
+//    api_key: 'key-e83f3236aad7ce7a0d45d51d45de5ae6',
+//    domain: 'sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org'
+//  }
+//}
+
+//var nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
 var controller = Botkit.slackbot({
     debug: true
@@ -457,6 +459,44 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 			
 });
 
+//controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+//	
+//	var toSend = '<ul>';
+//	var mailaddress = message.match[1];
+//	
+//	client.lrange('gaming', 0, -1, function(err, reply) {
+//		
+//		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+//			
+//			bot.reply(message, 'Unclaimed stories incoming in your email!');
+//
+//			for (var i = 0; i < reply.length; i++) {
+//			
+//			  if(reply[i] != 'claimed'){
+//				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+//				}
+//			}
+//			tosend = toSend + '</ul>';
+//			nodemailerMailgun.sendMail({
+//				  from: 'postmaster@sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org',
+//				  to: removeLinkFormatting(mailaddress), // An array if you have multiple recipients.
+//				  subject: 'Gaming News!',
+//				  //You can use "html:" to send HTML email content. It's magic!
+//				  html: toSend
+//				}, function (err, info) {
+//				  if (err) {
+//					console.log('Error: ' + err);
+//				  }
+//				  else {
+//					console.log('Response: ' + info);
+//				  }
+//				});
+//		}else{
+//			bot.reply(message, 'There are no stories left in the backlog');
+//		}
+//	});
+//});
+
 controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
 	var toSend = '<ul>';
@@ -475,20 +515,21 @@ controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention
 				}
 			}
 			tosend = toSend + '</ul>';
-			nodemailerMailgun.sendMail({
-				  from: 'postmaster@sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org',
-				  to: removeLinkFormatting(mailaddress), // An array if you have multiple recipients.
-				  subject: 'Gaming News!',
-				  //You can use "html:" to send HTML email content. It's magic!
-				  html: toSend
-				}, function (err, info) {
-				  if (err) {
-					console.log('Error: ' + err);
-				  }
-				  else {
-					console.log('Response: ' + info);
-				  }
-				});
+			var mailOptions = {
+				from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
+				to: mailaddress, // list of receivers
+				subject: 'Gaming News', // Subject line
+				html: toSend // html body
+			};
+
+		// send mail with defined transport object
+		transporter.sendMail(mailOptions, function(error, info){
+			if(error){
+				return console.log(error);
+			}
+			console.log('Message sent: ' + info.response);
+		});
+
 		}else{
 			bot.reply(message, 'There are no stories left in the backlog');
 		}
