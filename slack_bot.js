@@ -471,7 +471,7 @@ controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention
 			for (var i = 0; i < reply.length; i++) {
 			
 			  if(reply[i] != 'claimed'){
-				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '<li>';
+				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
 				}
 			}
 			tosend = toSend + '</ul>';
