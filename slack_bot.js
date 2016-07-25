@@ -492,9 +492,45 @@ controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention
 		}else{
 			bot.reply(message, 'There are no stories left in the backlog');
 		}
-		
 	});
+});
+
+controller.hears(['^!mailmetech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	
+	var toSend = '<ul>';
+	var mailaddress = message.match[1];
+	
+	client.lrange('tech', 0, -1, function(err, reply) {
+		
+		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
 			
+			bot.reply(message, 'Unclaimed stories incoming in your email!');
+
+			for (var i = 0; i < reply.length; i++) {
+			
+			  if(reply[i] != 'claimed'){
+				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+				}
+			}
+			tosend = toSend + '</ul>';
+			nodemailerMailgun.sendMail({
+				  from: 'postmaster@sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org',
+				  to: removeLinkFormatting(mailaddress), // An array if you have multiple recipients.
+				  subject: 'Technology News!',
+				  //You can use "html:" to send HTML email content. It's magic!
+				  html: toSend
+				}, function (err, info) {
+				  if (err) {
+					console.log('Error: ' + err);
+				  }
+				  else {
+					console.log('Response: ' + info);
+				  }
+				});
+		}else{
+			bot.reply(message, 'There are no stories left in the backlog');
+		}
+	});
 });
 
 function removeLinkFormatting(toCheck){
@@ -531,10 +567,12 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 	'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database \n'+
 	'!viewgaming: sends to your slack inbox all the unclaimed gaming news. Does NOT remove them from the database \n'+
 	'!cleargaming: sends to your slack inbox all the unclaimed gaming news and removes them from the database \n'+
+	'!mailmegaming [email]: sends to the given email address a list of the unclaimed gaming news \n' +
 	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
 	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
 	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
 	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
+	'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news \n' +
 	'!setdigest: sets the new digest (replaces the old one) \n'+
 	'!digest: I\'ll show you the current digest';
 
@@ -561,10 +599,12 @@ controller.hears(['^!view','^!claim (.*)','^!clear','^!add (.*)'], 'direct_messa
 	'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database \n'+
 	'!viewgaming: sends to your slack inbox all the unclaimed gaming news. Does NOT remove them from the database \n'+
 	'!cleargaming: sends to your slack inbox all the unclaimed gaming news and removes them from the database \n'+
+	'!mailmegaming [email]: sends to the given email address a list of the unclaimed gaming news \n' +
 	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
 	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
 	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
 	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
+	'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news \n' +
 	'!setdigest: sets the new digest (replaces the old one) \n'+
 	'!digest: I\'ll show you the current digest';
 
