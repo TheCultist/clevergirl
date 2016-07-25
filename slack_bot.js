@@ -517,7 +517,7 @@ controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention
 			tosend = toSend + '</ul>';
 			var mailOptions = {
 				from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
-				to: mailaddress, // list of receivers
+				to: removeLinkFormatting(mailaddress), // list of receivers
 				subject: 'Gaming News', // Subject line
 				html: toSend // html body
 			};
