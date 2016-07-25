@@ -451,7 +451,7 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
 	var toSend = '';
-	var mailaddress = message.match[1];
+	var mailaddress[0] = message.match[1];
 	
 	client.lrange('gaming', 0, -1, function(err, reply) {
 		
