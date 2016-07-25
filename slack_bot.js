@@ -70,11 +70,13 @@ if (!process.env.token) {
 }
 
 var redis = require('redis');
+var nodemailer = require('nodemailer');
 var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
 var Botkit = require('./lib/Botkit.js');
 var os = require('os');
 var gamingnews = [];
 var technews = [];
+var transporter = nodemailer.createTransport('smtps://techraptorclevergirl%40gmail.com:clevergirl4techraptor@smtp.gmail.com');
 
 var controller = Botkit.slackbot({
     debug: true
@@ -443,6 +445,45 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 	
 		setTimeout(bot.reply(message, 'Current digest: ' + toPrint),1000);
     });
+			
+});
+
+controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	
+	var toSend = '';
+	var mailaddress = message.match[1];
+	
+	client.lrange('gaming', 0, -1, function(err, reply) {
+		
+		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+			
+			bot.reply(message, 'Unclaimed stories incoming in your email!');
+
+			for (var i = 0; i < reply.length; i++) {
+			
+			  if(reply[i] != 'claimed'){
+				  toSend = toSend + '\n' + removeLinkFormatting(reply[i]);
+				}
+			}
+			
+			var mailOptions = {
+				from: '"Clever Girl" <techraptorclevergirl@gmail.com>', // sender address
+				to: mailaddress, // list of receivers
+				subject: 'Gaming News List', // Subject line
+				text: toSend, // plaintext body
+				html: toSend // html body
+			};
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					return console.log(error);
+				}
+				console.log('Message sent: ' + info.response);
+			});
+		}else{
+			bot.reply(message, 'There are no stories left in the backlog');
+		}
+		
+	});
 			
 });
 
