@@ -267,7 +267,7 @@ controller.hears(['^!claimgaming (.*)'], 'direct_message,direct_mention,mention,
 
 				for (var i = 0; i < reply.length; i++) {
 			  
-					if (reply[i].substring(0, news.length) == news) {
+					if (reply[i].substring(0, news.length).toUpperCase() == news.toUpperCase()) {
 
 						bot.reply(message, 'The scoop :scoop: ' + reply[i] + ' has been claimed');
 						convo.say(
@@ -365,7 +365,7 @@ controller.hears(['^!claimtech (.*)'], 'direct_message,direct_mention,mention,am
 
 				for (var i = 0; i < reply.length; i++) {
 			  
-					if (reply[i].substring(0, news.length) == news) {
+					if (reply[i].substring(0, news.length).toUpperCase() == news.toUpperCase()) {
 
 						bot.reply(message, 'The scoop :scoop: ' + reply[i] + ' has been claimed');
 						convo.say(
