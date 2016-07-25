@@ -477,7 +477,7 @@ controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention
 			}
 			
 			nodemailerMailgun.sendMail({
-				  from: 'techraptorclevergirl@gmail.com',
+				  from: 'postmaster@sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org',
 				  to: mailaddress, // An array if you have multiple recipients.
 				  subject: 'Gaming News!',
 				  //You can use "html:" to send HTML email content. It's magic!
