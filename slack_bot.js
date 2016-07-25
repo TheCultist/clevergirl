@@ -474,7 +474,7 @@ controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention
 				  toSend = toSend + '\n' + removeLinkFormatting(reply[i]);
 				}
 			}
-			
+			console.log(mailaddress);
 			nodemailerMailgun.sendMail({
 				  from: 'postmaster@sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org',
 				  to: mailaddress, // An array if you have multiple recipients.
