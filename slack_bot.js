@@ -71,12 +71,21 @@ if (!process.env.token) {
 
 var redis = require('redis');
 var nodemailer = require('nodemailer');
+var mg = require('nodemailer-mailgun-transport');
 var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
 var Botkit = require('./lib/Botkit.js');
 var os = require('os');
 var gamingnews = [];
 var technews = [];
-var transporter = nodemailer.createTransport('smtps://techraptorclevergirl%40gmail.com:clevergirl4techraptor@smtp.gmail.com');
+
+var auth = {
+  auth: {
+    api_key: 'key-e83f3236aad7ce7a0d45d51d45de5ae6',
+    domain: 'sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org'
+  }
+}
+
+var nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
 var controller = Botkit.slackbot({
     debug: true
@@ -467,19 +476,20 @@ controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention
 				}
 			}
 			
-			var mailOptions = {
-				from: '"Clever Girl" <techraptorclevergirl@gmail.com>', // sender address
-				to: mailaddress, // list of receivers
-				subject: 'Gaming News List', // Subject line
-				text: toSend, // plaintext body
-				html: toSend // html body
-			};
-			transporter.sendMail(mailOptions, function(error, info){
-				if(error){
-					return console.log(error);
-				}
-				console.log('Message sent: ' + info.response);
-			});
+			nodemailerMailgun.sendMail({
+				  from: 'techraptorclevergirl@gmail.com',
+				  to: mailaddress, // An array if you have multiple recipients.
+				  subject: 'Gaming News!',
+				  //You can use "html:" to send HTML email content. It's magic!
+				  html: toSend
+				}, function (err, info) {
+				  if (err) {
+					console.log('Error: ' + err);
+				  }
+				  else {
+					console.log('Response: ' + info);
+				  }
+				});
 		}else{
 			bot.reply(message, 'There are no stories left in the backlog');
 		}
