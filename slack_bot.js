@@ -459,7 +459,7 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 
 controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
-	var toSend = '';
+	var toSend = '<ul>';
 	var mailaddress = message.match[1];
 	
 	client.lrange('gaming', 0, -1, function(err, reply) {
@@ -471,9 +471,10 @@ controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention
 			for (var i = 0; i < reply.length; i++) {
 			
 			  if(reply[i] != 'claimed'){
-				  toSend = toSend + '\n' + removeLinkFormatting(reply[i]);
+				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '<li>';
 				}
 			}
+			tosend = toSend + '</ul>';
 			nodemailerMailgun.sendMail({
 				  from: 'postmaster@sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org',
 				  to: removeLinkFormatting(mailaddress), // An array if you have multiple recipients.
