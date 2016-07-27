@@ -575,7 +575,7 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 		}
 	});
 		
-	if(tosend.length > 0){
+	if(toSend.length > 0){
 		var mailOptions = {
 			from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
 			to: removeLinkFormatting(mailaddress), // list of receivers
