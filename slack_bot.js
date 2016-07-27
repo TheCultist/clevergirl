@@ -615,6 +615,51 @@ function removeLinkFormatting(toCheck){
 	
 };
 
+controller.hears(['^!clearall'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    	
+	client.lrange('gaming', 0, -1, function(err, reply) {
+			
+		bot.startPrivateConversation(message,function(err,convo) {
+			
+		for (var i = 0; i < reply.length; i++) {
+		  if(reply[i] != 'claimed'){
+				convo.say(
+					{
+						text: removeLinkFormatting(reply[i]),
+						channel: message.user
+					}
+				);
+				
+			}
+		  }
+		});
+	});
+
+	client.del('gaming');
+	  
+	client.lrange('tech', 0, -1, function(err, reply) {
+				
+			bot.startPrivateConversation(message,function(err,convo) {
+				
+			for (var i = 0; i < reply.length; i++) {
+			  if(reply[i] != 'claimed'){
+					convo.say(
+						{
+							text: removeLinkFormatting(reply[i]),
+							channel: message.user
+						}
+					);
+					
+				}
+			  }
+			});
+		 });
+
+	client.del('tech');
+
+	bot.reply(message, 'News database cleaned!');	
+});
+
 
 controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot, message) {
 	
@@ -636,6 +681,7 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 	'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news \n' +
 	'!setdigest: sets the new digest (replaces the old one) \n'+
 	'!digest: I\'ll show you the current digest \n'+
+	'!clearall: sends to your slack inbox all the unclaimed gaming and tech news and removes them from the database \n'+
 	'!mailmeall [email]: Mail both gaming and tech unclaimed stories to the given email address';
 
 	bot.startPrivateConversation(message,function(err,convo) {		
@@ -669,6 +715,7 @@ controller.hears(['^!view','^!claim (.*)','^!clear','^!add (.*)'], 'direct_messa
 	'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news \n' +
 	'!setdigest: sets the new digest (replaces the old one) \n'+
 	'!digest: I\'ll show you the current digest \n'+
+	'!clearall: sends to your slack inbox all the unclaimed gaming and tech news and removes them from the database \n'+
 	'!mailmeall [email]: Mail both gaming and tech unclaimed stories to the given email address';
 
 	bot.startPrivateConversation(message,function(err,convo) {		
