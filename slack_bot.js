@@ -572,6 +572,7 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 				toSend = toSend + '</ul>';
 			}
 			if(toSend.length > 0){
+				bot.reply(message, 'Unclaimed stories incoming in your email!');
 				var mailOptions = {
 					from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
 					to: removeLinkFormatting(mailaddress), // list of receivers
