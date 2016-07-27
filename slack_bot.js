@@ -643,7 +643,8 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
 	'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news \n' +
 	'!setdigest: sets the new digest (replaces the old one) \n'+
-	'!digest: I\'ll show you the current digest';
+	'!digest: I\'ll show you the current digest \n'+
+	'!mailmeall [email]: Mail both gaming and tech unclaimed stories to the given email address';
 
 	bot.startPrivateConversation(message,function(err,convo) {		
 		convo.say(
@@ -675,7 +676,8 @@ controller.hears(['^!view','^!claim (.*)','^!clear','^!add (.*)'], 'direct_messa
 	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
 	'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news \n' +
 	'!setdigest: sets the new digest (replaces the old one) \n'+
-	'!digest: I\'ll show you the current digest';
+	'!digest: I\'ll show you the current digest \n'+
+	'!mailmeall [email]: Mail both gaming and tech unclaimed stories to the given email address';
 
 	bot.startPrivateConversation(message,function(err,convo) {		
 		convo.say(
