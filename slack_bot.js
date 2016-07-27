@@ -541,16 +541,13 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 	
 	var toSend = '';
 	var mailaddress = message.match[1];
-	var nostories = true;
 	
 	client.lrange('gaming', 0, -1, function(err, reply) {
 		
 		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
 			
 			toSend = '<b>GAMING NEWS:</b> <br><ul>';
-			
-			nostories = false;
-			
+						
 			for (var i = 0; i < reply.length; i++) {
 			
 			  if(reply[i] != 'claimed'){
@@ -567,8 +564,6 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 			
 			toSend = toSend + '<br><b>TECHNOLOGY NEWS:</b> <br><ul>';
 			
-			nostories = false;
-
 			for (var i = 0; i < reply.length; i++) {
 				
 			  if(reply[i] != 'claimed'){
@@ -580,7 +575,7 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 		}
 	});
 		
-	if(!nostories){
+	if(tosend.length > 0){
 		var mailOptions = {
 			from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
 			to: removeLinkFormatting(mailaddress), // list of receivers
