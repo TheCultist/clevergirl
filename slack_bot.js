@@ -74,6 +74,7 @@ var nodemailer = require('nodemailer');
 //var mg = require('nodemailer-mailgun-transport');
 var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
 var Botkit = require('./lib/Botkit.js');
+var async = require('async.js');
 var os = require('os');
 var gamingnews = [];
 var technews = [];
@@ -542,26 +543,28 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 	var toSend = '';
 	var mailaddress = message.match[1];
 	
-	client.lrange('gaming', 0, -1, function(err, reply) {
-		
-		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+	async.series([
+		client.lrange('gaming', 0, -1, function(err, reply) {
 			
-			toSend = '<b>GAMING NEWS:</b> <br><ul>';
-						
-			for (var i = 0; i < reply.length; i++) {
-			
-			  if(reply[i] != 'claimed'){
-				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+			if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+				
+				toSend = '<b>GAMING NEWS:</b> <br><ul>';
+							
+				for (var i = 0; i < reply.length; i++) {
+				
+				  if(reply[i] != 'claimed'){
+					  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+					}
 				}
-			}
-			tosend = toSend + '</ul>';
+				tosend = toSend + '</ul>';
 
-		}
+			}
+		});
 		client.lrange('tech', 0, -1, function(err, reply) {
 		
 			if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
 				
-				toSend = toSend + '<b>TECHNOLOGY NEWS:</b><br><ul>';
+				toSend = toSend + '<br><b>TECHNOLOGY NEWS:</b> <br><ul>';
 				
 				for (var i = 0; i < reply.length; i++) {
 					
@@ -572,27 +575,27 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 				tosend = toSend + '</ul>';
 
 			}
-			if(toSend.length > 0){
-				bot.reply(message, 'Unclaimed stories incoming in your email!');
-				var mailOptions = {
-					from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
-					to: removeLinkFormatting(mailaddress), // list of receivers
-					subject: 'Unclaimed News', // Subject line
-					html: toSend // html body
-				};
-			
-				// send mail with defined transport object
-				transporter.sendMail(mailOptions, function(error, info){
-					if(error){
-						return console.log(error);
-					}
-					console.log('Message sent: ' + info.response);
-				});
-			}else{
-				bot.reply(message, 'There are no stories left in the backlog');
-			}
 		});
-	});	
+			
+		if(toSend.length > 0){
+			var mailOptions = {
+				from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
+				to: removeLinkFormatting(mailaddress), // list of receivers
+				subject: 'Unclaimed News', // Subject line
+				html: toSend // html body
+			};
+			
+			// send mail with defined transport object
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					return console.log(error);
+				}
+				console.log('Message sent: ' + info.response);
+			});
+		}else{
+			bot.reply(message, 'There are no stories left in the backlog');
+		}
+	]);
 });
 
 function removeLinkFormatting(toCheck){
