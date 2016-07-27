@@ -554,7 +554,7 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
 				}
 			}
-			tosend = toSend + '</ul><br>';
+			tosend = toSend + '</ul>';
 
 		}
 		client.lrange('tech', 0, -1, function(err, reply) {
