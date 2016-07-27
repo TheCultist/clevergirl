@@ -557,7 +557,7 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
 				}
 			}
-			tosend = toSend + '</ul>';';
+			tosend = toSend + '</ul>';
 
 		}
 	});
