@@ -459,82 +459,6 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 			
 });
 
-//controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-//	
-//	var toSend = '<ul>';
-//	var mailaddress = message.match[1];
-//	
-//	client.lrange('gaming', 0, -1, function(err, reply) {
-//		
-//		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
-//			
-//			bot.reply(message, 'Unclaimed stories incoming in your email!');
-//
-//			for (var i = 0; i < reply.length; i++) {
-//			
-//			  if(reply[i] != 'claimed'){
-//				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
-//				}
-//			}
-//			tosend = toSend + '</ul>';
-//			nodemailerMailgun.sendMail({
-//				  from: 'postmaster@sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org',
-//				  to: removeLinkFormatting(mailaddress), // An array if you have multiple recipients.
-//				  subject: 'Gaming News!',
-//				  //You can use "html:" to send HTML email content. It's magic!
-//				  html: toSend
-//				}, function (err, info) {
-//				  if (err) {
-//					console.log('Error: ' + err);
-//				  }
-//				  else {
-//					console.log('Response: ' + info);
-//				  }
-//				});
-//		}else{
-//			bot.reply(message, 'There are no stories left in the backlog');
-//		}
-//	});
-//});
-
-//controller.hears(['^!mailmetech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-//	
-//	var toSend = '<ul>';
-//	var mailaddress = message.match[1];
-//	
-//	client.lrange('tech', 0, -1, function(err, reply) {
-//		
-//		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
-//			
-//			bot.reply(message, 'Unclaimed stories incoming in your email!');
-//
-//			for (var i = 0; i < reply.length; i++) {
-//			
-//			  if(reply[i] != 'claimed'){
-//				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
-//				}
-//			}
-//			tosend = toSend + '</ul>';
-//			nodemailerMailgun.sendMail({
-//				  from: 'postmaster@sandboxad9fe307c5d64e09b4730761129a9fa7.mailgun.org',
-//				  to: removeLinkFormatting(mailaddress), // An array if you have multiple recipients.
-//				  subject: 'Technology News!',
-//				  //You can use "html:" to send HTML email content. It's magic!
-//				  html: toSend
-//				}, function (err, info) {
-//				  if (err) {
-//					console.log('Error: ' + err);
-//				  }
-//				  else {
-//					console.log('Response: ' + info);
-//				  }
-//				});
-//		}else{
-//			bot.reply(message, 'There are no stories left in the backlog');
-//		}
-//	});
-//});
-
 controller.hears(['^!mailmetech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
 	var toSend = '<ul>';
@@ -611,6 +535,71 @@ controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention
 			bot.reply(message, 'There are no stories left in the backlog');
 		}
 	});
+});
+
+controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	
+	var toSend = '';
+	var mailaddress = message.match[1];
+	var nostories = true;
+	
+	client.lrange('gaming', 0, -1, function(err, reply) {
+		
+		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+			
+			toSend = '<b>GAMING NEWS:</b> <br><ul>';
+			
+			nostories = false;
+			
+			for (var i = 0; i < reply.length; i++) {
+			
+			  if(reply[i] != 'claimed'){
+				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+				}
+			}
+			tosend = toSend + '</ul>';';
+
+		}
+	});
+	client.lrange('tech', 0, -1, function(err, reply) {
+	
+		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+			
+			toSend = toSend + '<br><b>TECHNOLOGY NEWS:</b> <br><ul>';
+			
+			nostories = false;
+
+			for (var i = 0; i < reply.length; i++) {
+				
+			  if(reply[i] != 'claimed'){
+				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+				}
+			}
+			tosend = toSend + '</ul>';
+
+		}
+	});
+		
+	if(!nostories){
+		var mailOptions = {
+			from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
+			to: removeLinkFormatting(mailaddress), // list of receivers
+			subject: 'Unclaimed News', // Subject line
+			html: toSend // html body
+		};
+		
+		// send mail with defined transport object
+		transporter.sendMail(mailOptions, function(error, info){
+			if(error){
+				return console.log(error);
+			}
+			console.log('Message sent: ' + info.response);
+		});
+	}else{
+		bot.reply(message, 'There are no stories left in the backlog');
+	};
+		
+
 });
 
 function removeLinkFormatting(toCheck){
