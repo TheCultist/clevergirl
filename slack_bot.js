@@ -559,7 +559,7 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 				tosend = toSend + '</ul>';
 
 			}
-		});
+		}),
 		client.lrange('tech', 0, -1, function(err, reply) {
 		
 			if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
@@ -575,27 +575,26 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 				tosend = toSend + '</ul>';
 
 			}
-		});
-			
-		if(toSend.length > 0){
-			var mailOptions = {
-				from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
-				to: removeLinkFormatting(mailaddress), // list of receivers
-				subject: 'Unclaimed News', // Subject line
-				html: toSend // html body
-			};
-			
-			// send mail with defined transport object
-			transporter.sendMail(mailOptions, function(error, info){
-				if(error){
-					return console.log(error);
-				}
-				console.log('Message sent: ' + info.response);
-			});
-		}else{
-			bot.reply(message, 'There are no stories left in the backlog');
-		}
+		})
 	]);
+	if(toSend.length > 0){
+		var mailOptions = {
+			from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
+			to: removeLinkFormatting(mailaddress), // list of receivers
+			subject: 'Unclaimed News', // Subject line
+			html: toSend // html body
+		};
+		
+		// send mail with defined transport object
+		transporter.sendMail(mailOptions, function(error, info){
+			if(error){
+				return console.log(error);
+			}
+			console.log('Message sent: ' + info.response);
+		});
+	}else{
+		bot.reply(message, 'There are no stories left in the backlog');
+	}
 });
 
 function removeLinkFormatting(toCheck){
