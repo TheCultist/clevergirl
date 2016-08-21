@@ -599,23 +599,16 @@ function removeLinkFormatting(toCheck){
 	while(/\<(.*)\>/.test(toCheck)){
 		
 		if(/\<(.*)\|(.*)\>/.test(toCheck)){
-					
-			while(/\<(.*)\|(.*)\>/.test(toCheck)){
-					
-				var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
 										
-				toCheck = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
-					
-			}
-		
+			var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
+										
+			toCheck = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
+							
 		}else if(/\<(.*)\>/.test(toCheck)){
-			
-			while(/\<(.*)\>/.test(toCheck)){
-			
-				var formattedLink = toCheck.match(/\<(.*)\>/);
 						
-				toCheck = toCheck.replace(formattedLink[0], formattedLink[0].substring(1,formattedLink[0].length-1));
-			}
+			var formattedLink = toCheck.match(/\<(.*)\>/);
+						
+			toCheck = toCheck.replace(formattedLink[0], formattedLink[0].substring(1,formattedLink[0].length-1));		
 		}
 	}
 	
