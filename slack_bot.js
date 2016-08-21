@@ -250,6 +250,18 @@ controller.hears(['^!addgaming (.*)'], 'direct_message,direct_mention,mention,am
 	
 	if(news != undefined && news !=null && news != ''){
 
+		var words = news.split(" ");
+		
+		for (var i = 0; i < words.length; i++) {
+			
+			if(/\<(.*)\>/.test(words[i])){
+				words[i] = removeLinkFormatting(words[i]);
+			}
+			
+		}
+		
+		words.join(" ");
+		
 		client.rpush(['gaming', news]);
 		
 		bot.reply(message, 'Your scoop has been added :scoop:');
@@ -595,24 +607,23 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 });
 
 function removeLinkFormatting(toCheck){
-	
-	while(/\<(.*)\>/.test(toCheck)){
 		
-		if(/\<(.*)\|(.*)\>/.test(toCheck)){
-										
-			var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
-										
-			toCheck = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
-							
-		}else if(/\<(.*)\>/.test(toCheck)){
-						
-			var formattedLink = toCheck.match(/\<(.*)\>/);
-						
-			toCheck = toCheck.replace(formattedLink[0], formattedLink[0].substring(1,formattedLink[0].length-1));		
-		}
+	var toReturn = toCheck;
+		
+	if(/\<(.*)\|(.*)\>/.test(toCheck)){
+				
+		var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
+								
+		toReturn = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
+				
+	}else if(/\<(.*)\>/.test(toCheck)){
+		
+		var formattedLink = toCheck.match(/\<(.*)\>/);
+				
+		toReturn = toCheck.replace(formattedLink[0], formattedLink[0].substring(1,formattedLink[0].length-1));
 	}
 	
-	return toCheck;
+	return toReturn;
 	
 };
 
