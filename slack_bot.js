@@ -595,14 +595,12 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 });
 
 function removeLinkFormatting(toCheck){
-		
-	var toReturn = toCheck;
-		 
+				 
 	while(/\<(.*)\|(.*)\>/.test(toCheck)){
 				
 		var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
 								
-		toReturn = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
+		toCheck = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
 				
 	}
 	
@@ -610,10 +608,10 @@ function removeLinkFormatting(toCheck){
 		
 		var formattedLink = toCheck.match(/\<(.*)\>/);
 				
-		toReturn = toCheck.replace(formattedLink[0], formattedLink[0].substring(1,formattedLink[0].length-1));
+		toCheck = toCheck.replace(formattedLink[0], formattedLink[0].substring(1,formattedLink[0].length-1));
 	}
 	
-	return toReturn;
+	return toCheck;
 	
 };
 
