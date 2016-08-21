@@ -353,17 +353,28 @@ controller.hears(['^!cleargaming'], 'direct_message,direct_mention,mention,ambie
 
 
 controller.hears(['^!addtech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-    
+        
 	var news = message.match[1];
 	
 	if(news != undefined && news !=null && news != ''){
 
-		client.rpush(['tech', news]);
+		var words = news.split(" ");
+		
+		for (var i = 0; i < words.length; i++) {
+			
+			if(/\<(.*)\>/.test(words[i])){
+				words[i] = removeLinkFormatting(words[i]);
+			}
+			
+		}
+		
+		client.rpush(['tech', words.join(" ")]);
 		
 		bot.reply(message, 'Your scoop has been added :scoop:');
 	}
 	
 });
+
 
 controller.hears(['^!claimtech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     
