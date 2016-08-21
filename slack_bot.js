@@ -260,9 +260,7 @@ controller.hears(['^!addgaming (.*)'], 'direct_message,direct_mention,mention,am
 			
 		}
 		
-		words.join(" ");
-		
-		client.rpush(['gaming', news]);
+		client.rpush(['gaming', words.join(" ")]);
 		
 		bot.reply(message, 'Your scoop has been added :scoop:');
 	}
