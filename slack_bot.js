@@ -597,14 +597,16 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 function removeLinkFormatting(toCheck){
 		
 	var toReturn = toCheck;
-		
-	if(/\<(.*)\|(.*)\>/.test(toCheck)){
+		 
+	while(/\<(.*)\|(.*)\>/.test(toCheck)){
 				
 		var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
 								
 		toReturn = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
 				
-	}else if(/\<(.*)\>/.test(toCheck)){
+	}
+	
+	while(/\<(.*)\>/.test(toCheck)){
 		
 		var formattedLink = toCheck.match(/\<(.*)\>/);
 				
