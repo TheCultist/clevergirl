@@ -595,20 +595,28 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 });
 
 function removeLinkFormatting(toCheck){
-				 
-	while(/\<(.*)\|(.*)\>/.test(toCheck)){
-				
-		var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
-								
-		toCheck = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
-				
-	}
 	
 	while(/\<(.*)\>/.test(toCheck)){
 		
-		var formattedLink = toCheck.match(/\<(.*)\>/);
-				
-		toCheck = toCheck.replace(formattedLink[0], formattedLink[0].substring(1,formattedLink[0].length-1));
+		if(/\<(.*)\|(.*)\>/.test(toCheck)){
+					
+			while(/\<(.*)\|(.*)\>/.test(toCheck)){
+					
+				var formattedLink = toCheck.match(/\<(.*)\|(.*)\>/);
+										
+				toCheck = toCheck.replace(/\<(.*)\|(.*)\>/,formattedLink[2]);
+					
+			}
+		
+		}else if(/\<(.*)\>/.test(toCheck)){
+			
+			while(/\<(.*)\>/.test(toCheck)){
+			
+				var formattedLink = toCheck.match(/\<(.*)\>/);
+						
+				toCheck = toCheck.replace(formattedLink[0], formattedLink[0].substring(1,formattedLink[0].length-1));
+			}
+		}
 	}
 	
 	return toCheck;
