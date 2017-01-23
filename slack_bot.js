@@ -75,6 +75,7 @@ var nodemailer = require('nodemailer');
 var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: true});
 var Botkit = require('./lib/Botkit.js');
 var os = require('os');
+var async = require('async');
 var gamingnews = [];
 var technews = [];
 
@@ -243,14 +244,12 @@ controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your na
              '>. I have been running for ' + uptime + ' on ' + hostname + '.');
 
     });
-
-controller.hears(['^!addgaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-    
-	var news = message.match[1];
 	
-	if(news != undefined && news !=null && news != ''){
+function addElement(key, element, bot, message) {
+		
+	if(element != undefined && element !=null && element != ''){
 
-		var words = news.split(" ");
+		var words = element.split(" ");
 		
 		for (var i = 0; i < words.length; i++) {
 			
@@ -260,204 +259,380 @@ controller.hears(['^!addgaming (.*)'], 'direct_message,direct_mention,mention,am
 			
 		}
 		
-		client.rpush(['gaming', words.join(" ")]);
+		client.rpush([key, words.join(" ")]);
 		
 		bot.reply(message, 'Your scoop has been added :scoop:');
 	}
+	
+}
+
+
+function claimElement(key, element, bot, message) {
+	
+	if(typeof element !== 'undefined' && element !=null && element != ''){
+		client.lrange(key, 0, -1, function(err, reply) {
+			bot.startPrivateConversation(message,function(err,convo) {
+
+				for (var i = 0; i < reply.length; i++) {
+			  
+					if (reply[i].substring(0, element.length).toUpperCase() == element.toUpperCase()) {
+
+						bot.reply(message, 'The scoop :scoop: ' + reply[i] + ' has been claimed');
+						convo.say(
+							{
+								text: 'Here is the stuff you claimed: \n' + removeLinkFormatting(reply[i]),
+								channel: message.user
+							}
+						);
+						client.lset(key, i, 'claimed');
+					}
+				}
+				
+				//setTimeout(function(key, bot, message){
+                //
+				//	client.lrange(key, 0, -1, function(err, reply) {
+				//			if(allclaimed(reply)){
+				//				clearKey(key, bot, message);
+				//			}
+				//		}, 3000);
+				//		
+				//});
+
+					
+			});
+			
+		});
+	}
+	
+}
+
+function viewKey(key, bot, message) {
+		
+	var block = '';
+	var actualKey = '';
+	
+	switch(key){
+		case 'scoopalt':
+			actualkey = 'scoop';
+			break;
+		case 'priorityalt':
+			actualkey = 'priority';
+			break;
+		case 'storyalt':
+			actualkey = 'story';
+			break;
+		case 'articlealt':
+			actualkey = 'article';
+			break;
+		default:
+			actualkey = key;
+	}
+	
+	client.lrange(actualkey, 0, -1, function(err, reply) {
+		
+		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+			
+			block += '*Incoming stuff in the ' + actualkey + ' category! *\n';
+				
+				for (var i = 0; i < reply.length; i++) {
+				
+				  if(reply[i] != 'claimed'){
+					  
+					  block += '*•* ' + removeLinkFormatting(reply[i]) + '\n';
+					  
+					}
+				}
+
+		}else{
+			block = 'empty';
+		}
+		
+		if ( block !== 'empty' ) {
+		
+			if(key !== 'scoopalt' && key !== 'priorityalt' && key !== 'storyalt' && key !== 'articlealt')
+				bot.reply(message, 'Incoming! Check your inbox.');
+			
+			if(key === 'article')
+				bot.reply(message, 'Stories and articles incoming in your inbox!');
+
+			bot.startPrivateConversation(message,function(err,convo) {
+
+				convo.say(
+					{
+						text: block,
+						channel: message.user
+					}
+				);
+			});		
+		}else{
+			bot.reply(message, 'There are no ' + actualkey + ' stories left in the backlog');
+		}
+		
+	});		
+		
+}
+
+function clearKey(key, bot, message) {
+
+	client.lrange(key, 0, -1, function(err, reply) {
+			
+		bot.startPrivateConversation(message,function(err,convo) {
+			
+			for (var i = 0; i < reply.length; i++) {
+			    if(reply[i] != 'claimed'){
+					convo.say(
+						{
+							text: removeLinkFormatting(reply[i]),
+							channel: message.user
+						}
+					);
+					
+				}
+			  }
+			client.del(key);
+		
+			bot.reply(message, 'The ' + key + ' is now empty!');
+		});
+		
+	 });
+
+}
+
+function mailmeKey(key,mailaddress, bot, message) {
+
+	var toSend = '<ul>';
+	
+	client.lrange(key, 0, -1, function(err, reply) {
+		
+		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+			
+			bot.reply(message, 'Unclaimed stories incoming in your email!');
+
+			for (var i = 0; i < reply.length; i++) {
+			
+			  if(reply[i] != 'claimed'){
+				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+				}
+			}
+			toSend = toSend + '</ul>';
+			var mailOptions = {
+				from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
+				to: removeLinkFormatting(mailaddress), // list of receivers
+				subject: key + ' News', // Subject line
+				html: toSend // html body
+			};
+
+		// send mail with defined transport object
+		transporter.sendMail(mailOptions, function(error, info){
+			if(error){
+				return console.log(error);
+			}
+			console.log('Message sent: ' + info.response);
+		});
+
+		}else{
+			bot.reply(message, 'There are no stories left in the backlog');
+		}
+	});
+}
+
+controller.hears(['^!addgaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	addElement('gaming', message.match[1], bot, message);
 	
 });
 
 controller.hears(['^!claimgaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     
-	var news = message.match[1];
+	claimElement('gaming', message.match[1], bot, message);
 	
-	if(typeof news !== 'undefined' && news !=null && news != ''){
-		client.lrange('gaming', 0, -1, function(err, reply) {
-			bot.startPrivateConversation(message,function(err,convo) {
-
-				for (var i = 0; i < reply.length; i++) {
-			  
-					if (reply[i].substring(0, news.length).toUpperCase() == news.toUpperCase()) {
-
-						bot.reply(message, 'The scoop :scoop: ' + reply[i] + ' has been claimed');
-						convo.say(
-							{
-								text: 'Here is the news story you claimed: \n' + removeLinkFormatting(reply[i]),
-								channel: message.user
-							}
-						);
-						client.lset('gaming', i, 'claimed');
-					}
-				}
-			});		
-		});
-	}
-
 });
 
 controller.hears(['^!viewgaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-    	
-	client.lrange('gaming', 0, -1, function(err, reply) {
-		
-		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
-			
-			bot.reply(message, 'Unclaimed stories incoming in your inbox!');
-
-			bot.startPrivateConversation(message,function(err,convo) {
-
-				for (var i = 0; i < reply.length; i++) {
-				
-				  if(reply[i] != 'claimed'){
-						convo.say(
-							{
-								text: removeLinkFormatting(reply[i]),
-								channel: message.user
-							}
-						);
-					}
-				}
-			});		
-		}else{
-			bot.reply(message, 'There are no stories left in the backlog');
-		}
-		
-	});
+    
+	viewKey('scoopalt', bot, message);	
+	viewKey('priorityalt', bot, message);	
+	viewKey('gaming', bot, message);
 
 });
 
 controller.hears(['^!cleargaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     	
-	client.lrange('gaming', 0, -1, function(err, reply) {
-			
-		bot.startPrivateConversation(message,function(err,convo) {
-			
-		for (var i = 0; i < reply.length; i++) {
-		  if(reply[i] != 'claimed'){
-				convo.say(
-					{
-						text: removeLinkFormatting(reply[i]),
-						channel: message.user
-					}
-				);
-				
-			}
-		  }
-		});
-	 });
-
-	  client.del('gaming');
-	  
-	  bot.reply(message, 'The gaming news database has been cleaned!');
-	
+	clearKey('gaming', bot, message);
+		
 });
 
+controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	
+	mailmeKey('gaming', message.match[1], bot, message);
+	
+});
 
 controller.hears(['^!addtech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
         
-	var news = message.match[1];
-	
-	if(news != undefined && news !=null && news != ''){
-
-		var words = news.split(" ");
-		
-		for (var i = 0; i < words.length; i++) {
-			
-			if(/\<(.*)\>/.test(words[i])){
-				words[i] = removeLinkFormatting(words[i]);
-			}
-			
-		}
-		
-		client.rpush(['tech', words.join(" ")]);
-		
-		bot.reply(message, 'Your scoop has been added :scoop:');
-	}
+	addElement('tech', message.match[1], bot, message);	
 	
 });
 
-
 controller.hears(['^!claimtech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     
-	var news = message.match[1];
-	
-	if(typeof news !== 'undefined' && news !=null && news != ''){
-		client.lrange('tech', 0, -1, function(err, reply) {
-			bot.startPrivateConversation(message,function(err,convo) {
-
-				for (var i = 0; i < reply.length; i++) {
-			  
-					if (reply[i].substring(0, news.length).toUpperCase() == news.toUpperCase()) {
-
-						bot.reply(message, 'The scoop :scoop: ' + reply[i] + ' has been claimed');
-						convo.say(
-							{
-								text: 'Here is the news story you claimed: \n' + removeLinkFormatting(reply[i]),
-								channel: message.user
-							}
-						);
-						client.lset('tech', i, 'claimed');
-					}
-				}
-			});		
-		});
-	}
+	claimElement('tech', message.match[1], bot, message);
 
 });
 
 controller.hears(['^!viewtech'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-    	
-	client.lrange('tech', 0, -1, function(err, reply) {
-		
-		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
-			
-			bot.reply(message, 'Unclaimed stories incoming in your inbox!');
-
-			bot.startPrivateConversation(message,function(err,convo) {
-
-				for (var i = 0; i < reply.length; i++) {
-				
-				  if(reply[i] != 'claimed'){
-						convo.say(
-							{
-								text: removeLinkFormatting(reply[i]),
-								channel: message.user
-							}
-						);
-					}
-				}
-			});		
-		}else{
-			bot.reply(message, 'There are no stories left in the backlog');
-		}
-		
-	});
+	
+	viewKey('scoopalt', bot, message);	
+	viewKey('priorityalt', bot, message);	
+	viewKey('tech', bot, message);
 
 });
 
 controller.hears(['^!cleartech'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-    	
-	client.lrange('tech', 0, -1, function(err, reply) {
-			
-		bot.startPrivateConversation(message,function(err,convo) {
-			
-		for (var i = 0; i < reply.length; i++) {
-		  if(reply[i] != 'claimed'){
-				convo.say(
-					{
-						text: removeLinkFormatting(reply[i]),
-						channel: message.user
-					}
-				);
-				
-			}
-		  }
-		});
-	 });
-
-	  client.del('tech');
-	  
-	  bot.reply(message, 'The technology news database has been cleaned!');
 	
+	clearKey('tech', bot, message);
+	
+});
+
+controller.hears(['^!mailmetech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+	
+	mailmeKey('tech', message.match[1], bot, message);
+	
+});
+
+controller.hears(['^!addpriority (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+        
+	addElement('priority', message.match[1], bot, message);	
+	
+});
+
+controller.hears(['^!claimpriority (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	claimElement('priority', message.match[1], bot, message);
+
+});
+
+controller.hears(['^!viewpriority'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	viewKey('priority', bot, message);	
+
+});
+
+controller.hears(['^!addscoop (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+        
+	addElement('scoop', message.match[1], bot, message);	
+	
+});
+
+controller.hears(['^!claimscoop (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	claimElement('scoop', message.match[1], bot, message);
+
+});
+
+controller.hears(['^!viewscoops'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	viewKey('scoop', bot, message);	
+
+});
+
+controller.hears(['^!addarticle (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+        
+	addElement('article', message.match[1], bot, message);	
+	
+});
+
+controller.hears(['^!claimarticle (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	claimElement('article', message.match[1], bot, message);
+
+});
+
+controller.hears(['^!addguide (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+        
+	addElement('guide', message.match[1], bot, message);	
+	
+});
+
+controller.hears(['^!deleteguide (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	claimElement('guide', message.match[1], bot, message);
+
+});
+
+controller.hears(['^!viewguides'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	viewKey('guide', bot, message);	
+
+});
+
+controller.hears(['^!addstory (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+        
+	addElement('story', message.match[1], bot, message);	
+	
+});
+
+controller.hears(['^!claimstory (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	claimElement('story', message.match[1], bot, message);
+
+});
+
+controller.hears(['^!viewstories'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	viewKey('story', bot, message);	
+
+});
+
+controller.hears(['^!addgamepage (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+        
+	addElement('gamepage', message.match[1], bot, message);	
+	
+});
+
+controller.hears(['^!claimgamepage (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	claimElement('gamepage', message.match[1], bot, message);
+
+});
+
+controller.hears(['^!viewgamepages'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	viewKey('gamepage', bot, message);	
+
+});
+
+controller.hears(['^!viewarticles'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	viewKey('article', bot, message);
+	viewKey('storyalt', bot, message);
+
+});
+
+controller.hears(['^!addquicklink (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	addElement('quicklink', message.match[1], bot, message);
+	
+});
+
+controller.hears(['^!removequicklink (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	claimElement('quicklink', message.match[1], bot, message);
+	
+});
+
+controller.hears(['^!viewquicklinks'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	viewKey('quicklink', bot, message);
+
+});
+
+controller.hears(['^!viewgaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    
+	viewKey('scoop', bot, message);	
+	viewKey('priority', bot, message);	
+	viewKey('gaming', bot, message);
+
 });
 
 controller.hears(['^!setdigest (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
@@ -477,85 +652,7 @@ controller.hears(['^!digest'], 'direct_message,direct_mention,mention,ambient', 
 	
 		setTimeout(bot.reply(message, 'Current digest: ' + toPrint),1000);
     });
-			
-});
-
-controller.hears(['^!mailmetech (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
 	
-	var toSend = '<ul>';
-	var mailaddress = message.match[1];
-	
-	client.lrange('tech', 0, -1, function(err, reply) {
-		
-		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
-			
-			bot.reply(message, 'Unclaimed stories incoming in your email!');
-
-			for (var i = 0; i < reply.length; i++) {
-			
-			  if(reply[i] != 'claimed'){
-				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
-				}
-			}
-			toSend = toSend + '</ul>';
-			var mailOptions = {
-				from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
-				to: removeLinkFormatting(mailaddress), // list of receivers
-				subject: 'Technology News', // Subject line
-				html: toSend // html body
-			};
-
-		// send mail with defined transport object
-		transporter.sendMail(mailOptions, function(error, info){
-			if(error){
-				return console.log(error);
-			}
-			console.log('Message sent: ' + info.response);
-		});
-
-		}else{
-			bot.reply(message, 'There are no stories left in the backlog');
-		}
-	});
-});
-
-controller.hears(['^!mailmegaming (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-	
-	var toSend = '<ul>';
-	var mailaddress = message.match[1];
-	
-	client.lrange('gaming', 0, -1, function(err, reply) {
-		
-		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
-			
-			bot.reply(message, 'Unclaimed stories incoming in your email!');
-
-			for (var i = 0; i < reply.length; i++) {
-			
-			  if(reply[i] != 'claimed'){
-				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
-				}
-			}
-			toSend = toSend + '</ul>';
-			var mailOptions = {
-				from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
-				to: removeLinkFormatting(mailaddress), // list of receivers
-				subject: 'Gaming News', // Subject line
-				html: toSend // html body
-			};
-
-		// send mail with defined transport object
-		transporter.sendMail(mailOptions, function(error, info){
-			if(error){
-				return console.log(error);
-			}
-			console.log('Message sent: ' + info.response);
-		});
-
-		}else{
-			bot.reply(message, 'There are no stories left in the backlog');
-		}
-	});
 });
 
 controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
@@ -637,73 +734,58 @@ function removeLinkFormatting(toCheck){
 };
 
 controller.hears(['^!clearall'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-    	
-	client.lrange('gaming', 0, -1, function(err, reply) {
-			
-		bot.startPrivateConversation(message,function(err,convo) {
-			
-		for (var i = 0; i < reply.length; i++) {
-		  if(reply[i] != 'claimed'){
-				convo.say(
-					{
-						text: removeLinkFormatting(reply[i]),
-						channel: message.user
-					}
-				);
-				
-			}
-		  }
-		});
-	});
+    
+	clearKey('gaming', bot, message);
+	setTimeout(function(){clearKey('tech', bot, message)}, 3000);
 
-	client.del('gaming');
-	  
-	client.lrange('tech', 0, -1, function(err, reply) {
-				
-			bot.startPrivateConversation(message,function(err,convo) {
-				
-			for (var i = 0; i < reply.length; i++) {
-			  if(reply[i] != 'claimed'){
-					convo.say(
-						{
-							text: removeLinkFormatting(reply[i]),
-							channel: message.user
-						}
-					);
-					
-				}
-			  }
-			});
-		 });
-
-	client.del('tech');
-
-	bot.reply(message, 'News database cleaned!');	
 });
-
 
 controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot, message) {
 	
 	var text = 'You can give me these commands:\n' +
-	'@clevergirl hello/hi: hello to you :) \n'+
-	'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname \n'+
-	'@clevergirl what is my name/who am i: I will tell you your nickname \n'+
-	'@clevergirl uptime/identify yourself/who are you/what is your name: I will tell you about me \n'+
-	'@clevergirl help: show list of commands \n'+
-	'!addgaming [text]: adds [text] to the unclaimed gaming news database. \n '+
-	'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database \n'+
-	'!viewgaming: sends to your slack inbox all the unclaimed gaming news. Does NOT remove them from the database \n'+
-	'!cleargaming: sends to your slack inbox all the unclaimed gaming news and removes them from the database \n'+
-	'!mailmegaming [email]: sends to the given email address a list of the unclaimed gaming news \n' +
-	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
-	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
-	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
-	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
-	'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news \n' +
-	'!setdigest: sets the new digest (replaces the old one) \n'+
-	'!digest: I\'ll show you the current digest \n'+
-	'!clearall: sends to your slack inbox all the unclaimed gaming and tech news and removes them from the database \n'+
-	'!mailmeall [email]: Mail both gaming and tech unclaimed stories to the given email address';
+				'*basic commands*\n' +
+				'@clevergirl hello/hi: hello to you :)' +
+				'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname\n' +
+				'@clevergirl what is my name/who am i: I will tell you your nickname\n' +
+				'@clevergirl uptime/identify yourself/who are you/what is your name: I will tell you about me\n' +
+				'@clevergirl help: show list of commands\n' +
+				'*Viewing Items to be Written - sent to you via PM’s*\n' +
+				'!viewgaming: sends all the unclaimed gaming news including priority and scoops. Does NOT remove them from the database\n' +
+				'!viewtech: sends all the unclaimed technology news including priority and scoop. Does NOT remove them from the database\n' +
+				'!viewarticles: sends all the stories and articles to be written. Does NOT remove them from the database\n' +
+				'!viewguides: sends the list of guides to be written. Does NOT remove them from the database\n' +
+				'!viewgamepages: sends the list of Game Pages that need to be created. Does NOT remove them from the database\n' +
+				'!viewscoops: sends the list of scoops that need to be covered. Does NOT remove them from the database\n' +
+				'!viewpriority: sends the list of priority stories that need to be covered. Does NOT remove them from the database\n' +				
+				'!viewpriority: sends the list of other stories that need to be covered. Does NOT remove them from the database\n' +				
+				'!mailmegaming [email]: sends to the given email address a list of the unclaimed gaming news\n' +
+				'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news\n' +
+				'!mailmeall [email]: Mail both gaming and tech unclaimed stories to the given email address\n' +
+				'!digest: I\'ll show you the current digest\n' +
+				'*Adding Items to be Written*\n' +
+				'!addgaming [text]: adds [text] to the unclaimed gaming news database.\n' +
+				'!addtech [text]: adds [text] to the unclaimed technology news database.\n' +
+				'!addstory [text]: adds [text] to the article database.\n' +
+				'!addarticle [text]: adds [text] to the article database.\n' +
+				'!addgamepage [text]: adds [text] to the gamepages database.\n' +
+				'!addguide [text]: adds [text] to the guide database.\n' +
+				'!addscoop [text]: adds [text] to the unclaimed scoop database.\n' +
+				'*Claiming a Story*\n' +
+				'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database\n' +
+				'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database\n' +
+				'!claimpriority [text]: sends to your slack inbox all the unclaimed priority news that start with [text] and removes them from database\n' +
+				'!claimscoop [text]: sends to your slack inbox all the unclaimed scoop news that start with [text] and removes them from database\n' +
+				'!claimarticle [text]: sends to your slack inbox all the TODO stories that start with [text] and removes them from database\n' +
+				'!claimstory [text]: sends to your slack inbox all the TODO stories that start with [text] and removes them from database\n' +
+				'!claimgamepage [text]: sends to your slack inbox all the TODO gamepages that start with [text] and removes them from database\n' +
+				'*EDITOR ONLY Commands*\n' +
+				'!addpriority [text]: adds [text] to the unclaimed priority database.\n' +
+				'!deleteguide [text]: sends to your slack inbox all the guides that start with [text] and removes them from database DO NOT DO WITHOUT EDITOR APPROVAL\n' +
+				'!cleargaming: sends to your slack inbox all the unclaimed gaming news and removes them from the database\n' +
+				'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database\n' +
+				'!clearall: sends to your slack inbox all the unclaimed gaming and tech news and removes them from the database\n' +
+				'!setdigest: sets the new digest (replaces the old one)\n' +
+				'!deleteguide [text]: sends to your slack inbox all the guides that start with [text] and removes them from database DO NOT DO WITHOUT EDITOR APPROVAL\n';
 
 	bot.startPrivateConversation(message,function(err,convo) {		
 		convo.say(
@@ -719,25 +801,47 @@ controller.hears(['help'], 'direct_message,direct_mention,mention', function(bot
 controller.hears(['^!view','^!claim (.*)','^!clear','^!add (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     	
 	var text = 'You can give me these commands:\n' +
-	'@clevergirl hello/hi: hello to you :) \n'+
-	'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname \n'+
-	'@clevergirl what is my name/who am i: I will tell you your nickname \n'+
-	'@clevergirl uptime/identify yourself/who are you/what is your name: I will tell you about me \n'+
-	'@clevergirl help: show list of commands \n'+
-	'!addgaming [text]: adds [text] to the unclaimed gaming news database. \n '+
-	'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database \n'+
-	'!viewgaming: sends to your slack inbox all the unclaimed gaming news. Does NOT remove them from the database \n'+
-	'!cleargaming: sends to your slack inbox all the unclaimed gaming news and removes them from the database \n'+
-	'!mailmegaming [email]: sends to the given email address a list of the unclaimed gaming news \n' +
-	'!addtech [text]: adds [text] to the unclaimed technology news database. \n '+
-	'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database \n'+
-	'!viewtech: sends to your slack inbox all the unclaimed technology news. Does NOT remove them from the database \n'+
-	'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database \n' +
-	'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news \n' +
-	'!setdigest: sets the new digest (replaces the old one) \n'+
-	'!digest: I\'ll show you the current digest \n'+
-	'!clearall: sends to your slack inbox all the unclaimed gaming and tech news and removes them from the database \n'+
-	'!mailmeall [email]: Mail both gaming and tech unclaimed stories to the given email address';
+				'*basic commands*\n' +
+				'@clevergirl hello/hi: hello to you :)' +
+				'@clevergirl call me [nickname]/my name is [nickname]: I will remember your nickname\n' +
+				'@clevergirl what is my name/who am i: I will tell you your nickname\n' +
+				'@clevergirl uptime/identify yourself/who are you/what is your name: I will tell you about me\n' +
+				'@clevergirl help: show list of commands\n' +
+				'*Viewing Items to be Written - sent to you via PM’s*\n' +
+				'!viewgaming: sends all the unclaimed gaming news including priority and scoops. Does NOT remove them from the database\n' +
+				'!viewtech: sends all the unclaimed technology news including priority and scoop. Does NOT remove them from the database\n' +
+				'!viewarticles: sends all the stories and articles to be written. Does NOT remove them from the database\n' +
+				'!viewguides: sends the list of guides to be written. Does NOT remove them from the database\n' +
+				'!viewgamepages: sends the list of Game Pages that need to be created. Does NOT remove them from the database\n' +
+				'!mailmegaming [email]: sends to the given email address a list of the unclaimed gaming news\n' +
+				'!mailmetech [email]: sends to the given email address a list of the unclaimed technology news\n' +
+				'!mailmeall [email]: Mail both gaming and tech unclaimed stories to the given email address\n' +
+				'!digest: I\'ll show you the current digest\n' +
+				'*Adding Items to be Written*\n' +
+				'!addgaming [text]: adds [text] to the unclaimed gaming news database.\n' +
+				'!addtech [text]: adds [text] to the unclaimed technology news database.\n' +
+				'!addstory [text]: adds [text] to the article database.\n' +
+				'!addarticle [text]: adds [text] to the article database.\n' +
+				'!addgamepage [text]: adds [text] to the gamepages database.\n' +
+				'!addguide [text]: adds [text] to the guide database.\n' +
+				'!addscoop [text]: adds [text] to the unclaimed scoop database.\n' +
+				'*Claiming a Story*\n' +
+				'!claimgaming [text]: sends to your slack inbox all the unclaimed gaming news that start with [text] and removes them from database\n' +
+				'!claimtech [text]: sends to your slack inbox all the unclaimed technology news that start with [text] and removes them from database\n' +
+				'!claimpriority [text]: sends to your slack inbox all the unclaimed priority news that start with [text] and removes them from database\n' +
+				'!claimscoop [text]: sends to your slack inbox all the unclaimed scoop news that start with [text] and removes them from database\n' +
+				'!claimarticle [text]: sends to your slack inbox all the TODO stories that start with [text] and removes them from database\n' +
+				'!claimstory [text]: sends to your slack inbox all the TODO stories that start with [text] and removes them from database\n' +
+				'!claimgamepage [text]: sends to your slack inbox all the TODO gamepages that start with [text] and removes them from database\n' +
+				'*EDITOR ONLY Commands*\n' +
+				'!addpriority [text]: adds [text] to the unclaimed priority database.\n' +
+				'!deleteguide [text]: sends to your slack inbox all the guides that start with [text] and removes them from database DO NOT DO WITHOUT EDITOR APPROVAL\n' +
+				'!cleargaming: sends to your slack inbox all the unclaimed gaming news and removes them from the database\n' +
+				'!cleartech: sends to your slack inbox all the unclaimed technology news and removes them from the database\n' +
+				'!clearall: sends to your slack inbox all the unclaimed gaming and tech news and removes them from the database\n' +
+				'!setdigest: sets the new digest (replaces the old one)\n' +
+				'!deleteguide [text]: sends to your slack inbox all the guides that start with [text] and removes them from database DO NOT DO WITHOUT EDITOR APPROVAL\n';
+
 
 	bot.startPrivateConversation(message,function(err,convo) {		
 		convo.say(
