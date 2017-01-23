@@ -345,6 +345,7 @@ function viewKey(key, bot, message) {
 
 		}else{
 			block = 'empty';
+			bot.reply(message, 'There are no ' + actualkey + ' stories left in the backlog');
 		}
 		
 		if ( block !== 'empty' ) {
@@ -364,8 +365,6 @@ function viewKey(key, bot, message) {
 					}
 				);
 			});		
-		}else{
-			bot.reply(message, 'There are no ' + actualkey + ' stories left in the backlog');
 		}
 		
 	});		
