@@ -309,29 +309,28 @@ function claimElement(key, element, bot, message) {
 function viewKey(key, bot, message) {
 		
 	var block = '';
-	var actualKey = '';
 	
+	client.lrange(key, 0, -1, function(err, reply) {
+	
+		var actualKey = '';
 
-	
-	client.lrange(actualkey, 0, -1, function(err, reply) {
-
-	
-	switch(key){
-		case 'scoopalt':
-			actualkey = 'scoop';
-			break;
-		case 'priorityalt':
-			actualkey = 'priority';
-			break;
-		case 'storyalt':
-			actualkey = 'story';
-			break;
-		case 'articlealt':
-			actualkey = 'article';
-			break;
-		default:
-			actualkey = key;
-	}
+		switch(key){
+			case 'scoopalt':
+				actualkey = 'scoop';
+				break;
+			case 'priorityalt':
+				actualkey = 'priority';
+				break;
+			case 'storyalt':
+				actualkey = 'story';
+				break;
+			case 'articlealt':
+				actualkey = 'article';
+				break;
+			default:
+				actualkey = key;
+		}
+		
 		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
 			
 			block += '*Incoming stuff in the ' + actualkey + ' category! *\n';
