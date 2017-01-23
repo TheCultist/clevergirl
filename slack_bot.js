@@ -311,6 +311,11 @@ function viewKey(key, bot, message) {
 	var block = '';
 	var actualKey = '';
 	
+
+	
+	client.lrange(actualkey, 0, -1, function(err, reply) {
+
+	
 	switch(key){
 		case 'scoopalt':
 			actualkey = 'scoop';
@@ -327,9 +332,6 @@ function viewKey(key, bot, message) {
 		default:
 			actualkey = key;
 	}
-	
-	client.lrange(actualkey, 0, -1, function(err, reply) {
-		
 		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
 			
 			block += '*Incoming stuff in the ' + actualkey + ' category! *\n';
@@ -344,8 +346,8 @@ function viewKey(key, bot, message) {
 				}
 
 		}else{
-			block = 'empty';
 			bot.reply(message, 'There are no ' + actualkey + ' stories left in the backlog');
+			block = 'empty';
 		}
 		
 		if ( block !== 'empty' ) {
