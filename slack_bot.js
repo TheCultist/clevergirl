@@ -310,29 +310,12 @@ function viewKey(key, bot, message) {
 		
 	var block = '';
 	
-	switch(key){
-		case 'scoopalt':
-			actualkey = 'scoop';
-			break;
-		case 'priorityalt':
-			actualkey = 'priority';
-			break;
-		case 'storyalt':
-			actualkey = 'story';
-			break;
-		case 'articlealt':
-			actualkey = 'article';
-			break;
-		default:
-			actualkey = key;
-	}
-	client.lrange(actualkey, 0, -1, function(err, reply) {
+	client.lrange(key.replace('alt', ''), 0, -1, function(err, reply) {
 	
-		var actualKey = '';
 		
 		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
 			
-			block += '*Incoming stuff in the ' + actualkey + ' category! *\n';
+			block += '*Incoming stuff in the ' + key.replace('alt', '') + ' category! *\n';
 				
 				for (var i = 0; i < reply.length; i++) {
 				
@@ -345,7 +328,7 @@ function viewKey(key, bot, message) {
 
 		}else{
 			if(key !== 'scoopalt' && key !== 'priorityalt' && key !== 'storyalt' && key !== 'articlealt')
-				bot.reply(message, 'There are no ' + actualkey + ' stories left in the backlog');
+				bot.reply(message, 'There are no ' + key.replace('alt', '') + ' stories left in the backlog');
 			block = 'empty';
 		}
 		
