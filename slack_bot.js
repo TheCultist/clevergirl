@@ -627,14 +627,6 @@ controller.hears(['^!viewquicklinks'], 'direct_message,direct_mention,mention,am
 
 });
 
-controller.hears(['^!viewgaming'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
-    
-	viewKey('scoop', bot, message);	
-	viewKey('priority', bot, message);	
-	viewKey('gaming', bot, message);
-
-});
-
 controller.hears(['^!setdigest (.*)'], 'direct_message,direct_mention,mention,ambient', function(bot, message) {
     	
 	var digest = message.match[1];
