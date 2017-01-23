@@ -344,7 +344,8 @@ function viewKey(key, bot, message) {
 				}
 
 		}else{
-			bot.reply(message, 'There are no ' + actualkey + ' stories left in the backlog');
+			if(key !== 'scoopalt' && key !== 'priorityalt' && key !== 'storyalt' && key !== 'articlealt')
+				bot.reply(message, 'There are no ' + actualkey + ' stories left in the backlog');
 			block = 'empty';
 		}
 		
