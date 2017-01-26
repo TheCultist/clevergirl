@@ -635,57 +635,72 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 	var toSend = '';
 	var mailaddress = message.match[1];
 	
-	client.lrange('gaming', 0, -1, function(err, reply) {
-		
+	client.lrange('priority', 0, -1, function(err, reply) {
 		if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
-			
-			toSend = '<b>GAMING NEWS:</b> <br><ul>';
+		
+			toSend = '<b>PRIORITY NEWS:</b> <br><ul>';
 						
-			for (var i = 0; i < reply.length; i++) {
+			for (var j = 0; j < reply.length; j++) {
 			
-			  if(reply[i] != 'claimed'){
-				  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+			  if(reply[j] != 'claimed'){
+				  toSend = toSend + '<li>' + removeLinkFormatting(reply[j]) + '</li>';
 				}
 			}
 			toSend = toSend + '</ul>';
-
 		}
-		client.lrange('tech', 0, -1, function(err, reply) {
-		
+		client.lrange('gaming', 0, -1, function(err, reply) {
+			
 			if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
 				
-				toSend = toSend + '<br><b>TECHNOLOGY NEWS:</b> <br><ul>';
+				toSend = '<b>GAMING NEWS:</b> <br><ul>';
+							
+				for (var z = 0; z < reply.length; z++) {
 				
-				for (var i = 0; i < reply.length; i++) {
-					
-				  if(reply[i] != 'claimed'){
-					  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+				  if(reply[z] != 'claimed'){
+					  toSend = toSend + '<li>' + removeLinkFormatting(reply[z]) + '</li>';
 					}
 				}
 				toSend = toSend + '</ul>';
+
 			}
-			if(toSend.length > 0){
-				bot.reply(message, 'Unclaimed stories incoming in your email!');
-				var mailOptions = {
-					from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
-					to: removeLinkFormatting(mailaddress), // list of receivers
-					subject: 'Unclaimed News', // Subject line
-					html: toSend // html body
-				};
-				
-				// send mail with defined transport object
-				transporter.sendMail(mailOptions, function(error, info){
-					if(error){
-						return console.log(error);
+			client.lrange('tech', 0, -1, function(err, reply) {
+			
+				if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
+					
+					toSend = toSend + '<br><b>TECHNOLOGY NEWS:</b> <br><ul>';
+					
+					for (var i = 0; i < reply.length; i++) {
+						
+					  if(reply[i] != 'claimed'){
+						  toSend = toSend + '<li>' + removeLinkFormatting(reply[i]) + '</li>';
+						}
 					}
-					console.log('Message sent: ' + info.response);
-				});
-			}else{
-				bot.reply(message, 'There are no stories left in the backlog');
-			}
+					toSend = toSend + '</ul>';
+				}
+				if(toSend.length > 0){
+					bot.reply(message, 'Unclaimed stories incoming in your email!');
+					var mailOptions = {
+						from: '"Clever Girl" <techraptorclevergirl@yahoo.com>', // sender address
+						to: removeLinkFormatting(mailaddress), // list of receivers
+						subject: 'Unclaimed News', // Subject line
+						html: toSend // html body
+					};
+					
+					// send mail with defined transport object
+					transporter.sendMail(mailOptions, function(error, info){
+						if(error){
+							return console.log(error);
+						}
+						console.log('Message sent: ' + info.response);
+					});
+				}else{
+					bot.reply(message, 'There are no stories left in the backlog');
+				}
+			});
 		});
 	});
 });
+
 
 function removeLinkFormatting(toCheck){
 		
