@@ -652,7 +652,7 @@ controller.hears(['^!mailmeall (.*)'], 'direct_message,direct_mention,mention,am
 			
 			if (typeof reply !== 'undefined' && reply.length > 0 && !allclaimed(reply)) {
 				
-				toSend = '<b>GAMING NEWS:</b> <br><ul>';
+				toSend += '<b>GAMING NEWS:</b> <br><ul>';
 							
 				for (var z = 0; z < reply.length; z++) {
 				
